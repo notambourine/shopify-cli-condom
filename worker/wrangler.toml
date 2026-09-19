@@ -1,0 +1,9 @@
+name = "shopify-cli-condom-proxy"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+workers_dev = false
+preview_urls = false
+routes = [{ pattern = "condom.notambourine.com", custom_domain = true }]
+
+[vars]
+CANONICAL_HOST = "condom.notambourine.com"

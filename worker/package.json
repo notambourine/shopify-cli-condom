@@ -1,0 +1,25 @@
+{
+  "name": "shopify-cli-condom-proxy",
+  "private": true,
+  "description": "Cloudflare Worker that unseals theme tokens and forwards only development-theme operations to Shopify.",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "lint": "lockfile-lint --path package-lock.json --type npm --allowed-hosts npm --validate-https --validate-integrity --validate-package-names",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test 'test/*.test.ts'",
+    "keygen": "node bin/keygen.ts",
+    "seal": "node bin/seal.ts",
+    "issue": "node bin/issue.ts"
+  },
+  "dependencies": {
+    "graphql": "17.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.1",
+    "lockfile-lint": "^5.0.1",
+    "typescript": "^7.0.2"
+  }
+}

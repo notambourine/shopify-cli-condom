@@ -1,0 +1,15 @@
+.claude/ @tomfuertes
+.agents/ @tomfuertes
+.vscode/ @tomfuertes
+.github/ @tomfuertes
+
+package.json @tomfuertes
+package-lock.json @tomfuertes
+npm-shrinkwrap.json @tomfuertes
+pnpm-lock.yaml @tomfuertes
+pnpm-workspace.yaml @tomfuertes
+yarn.lock @tomfuertes
+bun.lock @tomfuertes
+.npmrc @tomfuertes
+.yarnrc.yml @tomfuertes
+.pnpmfile.cjs @tomfuertes

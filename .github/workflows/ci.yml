@@ -1,0 +1,85 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  fleet:
+    permissions:
+      contents: read
+    uses: notambourine/fleet-actions/.github/workflows/fleet-ci.yml@ac0bf619711d3e15ca18212ac001aa55c5cb533d # v1.9.1
+    with:
+      vet: true # One manifest with one dependency; the scan costs seconds.
+
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # Keep this after setup-node and before npm ci so its npm shim wins.
+      - uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f # v1.3.2
+        with:
+          mode: firewall-free
+
+      # Install scripts hard-link esbuild's platform binary into the bundle, which npm pack
+      # then emits as a hardlink entry that consumers cannot extract.
+      - run: sfw npm ci --ignore-scripts
+
+      - uses: notambourine/wormhook@8be3480a6eb56c14f3e9a6e13c5884fff42f21fe # v0.32.2
+        with:
+          mode: deep
+
+      # No guarddog: its heuristics fire on @shopify/cli's own minified bundle,
+      # which this repo exists to vendor. Socket, vet, and wormhook cover the tree.
+
+      - run: npm run lint
+
+      - run: npm run typecheck
+
+      - run: npm test
+
+  worker:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+
+      - uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f # v1.3.2
+        with:
+          mode: firewall-free
+
+      - run: sfw npm ci --ignore-scripts
+
+      - run: npm run lint
+
+      - run: npm run typecheck
+
+      - run: npm test
