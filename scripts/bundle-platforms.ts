@@ -68,7 +68,10 @@ export function bundlePlatforms(root: string): void {
 
       rmSync(dir, { recursive: true, force: true });
       mkdirSync(dir, { recursive: true });
-      execFileSync('tar', ['-xzf', tarball, '-C', dir, '--strip-components=1']);
+      // GNU tar reads -C positionally and ignores it after the archive; cwd is unambiguous.
+      execFileSync('tar', ['--extract', '--gzip', '--strip-components=1', '--file', tarball], { cwd: dir });
+      if (!existsSync(manifest)) throw new Error(`${name} did not extract into node_modules`);
+
       // stdout belongs to the `npm pack --json` this runs under.
       console.error(`bundled ${name}@${pinned.version}`);
     }
