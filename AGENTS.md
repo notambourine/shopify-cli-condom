@@ -6,6 +6,7 @@ Development-only Shopify CLI wrapper. `src/` owns argument, environment, and tem
 - Bundle and pin `@shopify/cli` exactly. Consumer `node_modules/.bin` must contain `shopify-cli-condom` but not `shopify`.
 - Install with `--ignore-scripts`. Dependency install scripts otherwise rewrite the bundled tree into an unpackable tarball.
 - Publish compiled `dist/`; Node does not strip types under `node_modules`.
+- Pack every supported platform's native binaries. npm resolves them per host, and a consumer cannot backfill a bundled tree.
 - Verify Shopify CLI behavior against the pinned distribution before relying on it.
 - Accept only explicit development options. Add a flag only after proving it cannot retarget or access a live theme, publish, push, select an environment, or pass arbitrary CLI input.
 - Build Shopify CLI arguments from parsed values. Do not forward caller arguments.
