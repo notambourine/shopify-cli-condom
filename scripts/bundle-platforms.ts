@@ -46,7 +46,16 @@ export function bundlePlatforms(root: string): void {
 
       const output = execFileSync(
         'npm',
-        ['pack', `${name}@${pinned.version}`, '--ignore-scripts', '--json', '--pack-destination', staging],
+        [
+          'pack',
+          `${name}@${pinned.version}`,
+          '--ignore-scripts',
+          '--json',
+          // Under `npm pack --dry-run` the inherited npm_config_dry_run would skip the write.
+          '--no-dry-run',
+          '--pack-destination',
+          staging,
+        ],
         { cwd: root, encoding: 'utf8' },
       );
       const [packed] = JSON.parse(output) as [{ filename: string; integrity: string }];
@@ -54,10 +63,14 @@ export function bundlePlatforms(root: string): void {
         throw new Error(`${name}@${pinned.version} does not match the integrity pinned in package-lock.json`);
       }
 
+      const tarball = join(staging, packed.filename);
+      if (!existsSync(tarball)) throw new Error(`npm reported ${packed.filename} but wrote no tarball`);
+
       rmSync(dir, { recursive: true, force: true });
       mkdirSync(dir, { recursive: true });
-      execFileSync('tar', ['-xzf', join(staging, packed.filename), '-C', dir, '--strip-components=1']);
-      console.log(`bundled ${name}@${pinned.version}`);
+      execFileSync('tar', ['-xzf', tarball, '-C', dir, '--strip-components=1']);
+      // stdout belongs to the `npm pack --json` this runs under.
+      console.error(`bundled ${name}@${pinned.version}`);
     }
   } finally {
     rmSync(staging, { recursive: true, force: true });
