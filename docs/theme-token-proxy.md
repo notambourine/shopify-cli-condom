@@ -56,6 +56,10 @@ Anyone with a raw Shopify token and the server's public key can seal locally. Th
 
 Theme-scoped operations require a fresh Shopify role check. Failed or non-development role checks deny the operation. The GraphQL policy under `worker/src/` limits creation and listings to development themes and rejects publishing, duplication, and operations outside the allowlist. Storefront previews are subject to the same development-role check.
 
+Storefront requests start with one explicit development-theme ID. The proxy wraps Shopify's essential cookie with a signed theme binding; later requests must carry that cookie or an explicit ID. Every request rechecks the role. Missing, duplicate, conflicting, or unsigned session context is rejected. Restart existing CLI sessions after upgrading the proxy.
+
+The proxy accepts storefront GET, HEAD, and form-encoded POST requests. Preview IDs in POST bodies are rejected; forms are limited to 10 MiB.
+
 In the pinned Shopify CLI, `shptka_` selects Theme Access mode. `SHOPIFY_CLI_THEME_KIT_ACCESS_DOMAIN` routes Admin GraphQL to `/cli/admin/api/<version>/graphql.json` and storefront rendering to `/cli/sfr`, carrying `X-Shopify-Shop` and `X-Shopify-Access-Token`. Keep the sealed format within the CLI's `shptka_\w*` log redaction. Re-verify these integration points against the bundled distribution on CLI upgrades.
 
 ## Expiry, rotation, and trust

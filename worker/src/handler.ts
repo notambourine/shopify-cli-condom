@@ -2,16 +2,15 @@ import { evaluate, themeId } from './policy.ts';
 import { importPrivateKey, normalizeStore, unseal } from './seal.ts';
 import type { Jwk, SealedPayload } from './seal.ts';
 import { issue } from './admin.ts';
-import { reject } from './http.ts';
+import { readBody, reject } from './http.ts';
+import { openPreview, sealPreview } from './preview-session.ts';
+import type { Credential } from './preview-session.ts';
 
 export type Env = { PRIVATE_KEY_JWK: string; CANONICAL_HOST: string; ADMIN_SSH_PUBLIC_KEY?: string; UPSTREAM_DOMAIN?: string };
 export type Upstream = (request: Request) => Promise<Response>;
 
-type Credential = { store: string; token: string };
-
 const defaultUpstream = 'theme-kit-access.shopifyapps.com';
 const adminPath = /^\/cli\/admin\/api\/[^/]+\/graphql\.json$/;
-const droppedStorefrontHeaders = /^(?:host|content-length|connection|x-real-ip|cf-.*|x-forwarded-.*)$/i;
 
 let cachedKey: { jwk: string; key: Promise<CryptoKey> } | undefined;
 async function privateKey(env: Env): Promise<CryptoKey> {
@@ -62,20 +61,56 @@ async function admin(request: Request, target: URL, credential: Credential, upst
 }
 
 async function storefront(request: Request, target: URL, credential: Credential, upstream: Upstream): Promise<Response> {
-  const preview = target.searchParams.get('preview_theme_id');
-  if (preview !== null) {
-    const id = themeId(preview);
-    const adminTarget = new URL(`https://${target.host}/cli/admin/api/unstable/graphql.json`);
-    if (id === null || await lookupRole(upstream, adminTarget, credential, id) !== 'DEVELOPMENT') {
-      return reject(403, `Theme ${preview} is not a development theme.`);
-    }
+  if (!['GET', 'HEAD', 'POST'].includes(request.method)) return reject(405, 'Unsupported storefront method.');
+  const selectors = [...target.searchParams.keys()].filter((name) => /^preview_theme_id/i.test(name));
+  if (selectors.length > 1 || selectors.some((name) => name !== 'preview_theme_id')) {
+    return reject(403, 'Ambiguous preview theme.');
   }
+  const preview = target.searchParams.get('preview_theme_id');
+  const cookies = (request.headers.get('cookie') ?? '').split(';').map((part) => part.trim());
+  const essential = cookies.filter((part) => part.startsWith('_shopify_essential='));
+  if (essential.length > 1) return reject(403, 'Ambiguous preview session.');
+  const session = essential[0] ? await openPreview(credential, essential[0].slice('_shopify_essential='.length)) : null;
+  if (essential.length && !session) return reject(403, 'Invalid preview session.');
+  const id = preview === null ? session?.id : themeId(preview);
+  if (!id || (session && session.id !== id)) return reject(403, 'A matching development preview is required.');
+  let body: Uint8Array<ArrayBuffer> | undefined;
+  if (request.method === 'POST') {
+    if (request.headers.get('content-type')?.split(';')[0]?.trim() !== 'application/x-www-form-urlencoded') {
+      return reject(415, 'Storefront POST requests must be form encoded.');
+    }
+    const bytes = await readBody(request, 10 * 1024 * 1024);
+    if (bytes === null) return reject(413, 'Storefront form exceeds 10 MiB.');
+    const form = new URLSearchParams(new TextDecoder().decode(bytes));
+    if ([...form.keys()].some((name) => /^preview_theme_id/i.test(name))) return reject(403, 'Preview theme must not be supplied in the body.');
+    body = bytes;
+  }
+  const adminTarget = new URL(`https://${target.host}/cli/admin/api/unstable/graphql.json`);
+  if (await lookupRole(upstream, adminTarget, credential, id) !== 'DEVELOPMENT') {
+    return reject(403, `Theme ${id} is not a development theme.`);
+  }
+  target.searchParams.set('preview_theme_id', id);
   const headers = new Headers();
-  for (const [name, value] of request.headers) if (!droppedStorefrontHeaders.test(name)) headers.set(name, value);
+  for (const name of ['accept', 'content-type', 'user-agent', 'authorization', 'signature', 'signature-input', 'signature-agent']) {
+    const value = request.headers.get(name);
+    if (value !== null) headers.set(name, value);
+  }
+  const forwardedCookies = cookies.filter((part) => part.startsWith('storefront_digest='));
+  if (session) forwardedCookies.push(`_shopify_essential=${session.cookie}`);
+  if (forwardedCookies.length) headers.set('cookie', forwardedCookies.join('; '));
   headers.set('X-Shopify-Shop', credential.store);
   headers.set('X-Shopify-Access-Token', credential.token);
-  const body = request.method === 'GET' || request.method === 'HEAD' ? null : request.body;
-  return upstream(new Request(target, { method: request.method, headers, body, redirect: 'manual' }));
+  const response = await upstream(new Request(target, { method: request.method, headers, body, redirect: 'manual' }));
+  const responseHeaders = new Headers(response.headers);
+  responseHeaders.delete('set-cookie');
+  responseHeaders.set('cache-control', 'no-store');
+  // The pinned CLI retains _shopify_essential but discards unrelated session cookies.
+  for (const cookie of response.headers.getSetCookie()) {
+    const match = /^_shopify_essential=([^;]*)(.*)$/.exec(cookie);
+    const wrapped = match ? `_shopify_essential=${await sealPreview(credential, { id, cookie: match[1] ?? '' })}${match[2] ?? ''}` : cookie;
+    responseHeaders.append('set-cookie', wrapped);
+  }
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers: responseHeaders });
 }
 
 export async function authenticate(env: Env, headers: Headers, now = Date.now()): Promise<{ credential: Credential } | { response: Response }> {
