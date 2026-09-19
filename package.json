@@ -1,6 +1,6 @@
 {
   "name": "@notambourine/shopify-cli-condom",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Development-only Shopify CLI wrapper for working on real stores.",
   "type": "module",
   "bin": {
