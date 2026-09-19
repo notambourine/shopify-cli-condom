@@ -127,6 +127,22 @@ test('answers 404 and 405 without unsealing anything', async () => {
   assert.equal(seen.length, 0);
 });
 
+test('serves a public landing page without touching Shopify', async () => {
+  const { seen, fetcher } = upstream(() => json({}));
+  const response = await handle(new Request('https://proxy.example/'), env(), fetcher);
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get('content-type') ?? '', /^text\/html/);
+  assert.match(response.headers.get('content-security-policy') ?? '', /frame-ancestors 'none'/);
+  const body = await response.text();
+  assert.match(body, /Let agents build/);
+  assert.match(body, /Theme development has no production ACL/);
+  assert.match(body, /github\.com\/notambourine\/shopify-cli-condom/);
+  const head = await handle(new Request('https://proxy.example/', { method: 'HEAD' }), env(), fetcher);
+  assert.equal(head.status, 200);
+  assert.equal(await head.text(), '');
+  assert.equal(seen.length, 0);
+});
+
 test('honours UPSTREAM_DOMAIN', async () => {
   const { seen, fetcher } = upstream(() => json({ data: { onlineStore: { passwordProtection: { enabled: false } } } }));
   await handle(admin({ query: 'query { onlineStore { passwordProtection { enabled } } }' }), { ...env(), UPSTREAM_DOMAIN: 'upstream.test' }, fetcher);

@@ -1,8 +1,10 @@
 # shopify-cli-condom
 
-Develop themes against a real store without exposing its live theme to routine commands.
+Let agents, interns, and developers build themes against a real store without giving routine commands a path to its live theme.
 
 Its only command, `dev`, runs a pinned Shopify CLI with development-theme allocation. It rejects theme IDs, live-theme access, publishing, pushing, environments, and arbitrary CLI arguments.
+
+Shopify theme development has no production ACL. A Theme Access token covers the store, and the standard CLI can use it to target live themes. Instructions in `AGENTS.md` reduce mistakes but do not enforce access. This wrapper narrows the available command surface; the optional proxy also keeps the raw Shopify credential out of the developer environment and rechecks that every scoped operation targets a development theme.
 
 ## Usage
 

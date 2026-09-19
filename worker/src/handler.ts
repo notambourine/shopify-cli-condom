@@ -3,6 +3,7 @@ import { importPrivateKey, normalizeStore, unseal } from './seal.ts';
 import type { Jwk, SealedPayload } from './seal.ts';
 import { issue } from './admin.ts';
 import { readBody, reject } from './http.ts';
+import { landing } from './landing.ts';
 import { openPreview, sealPreview } from './preview-session.ts';
 import type { Credential } from './preview-session.ts';
 
@@ -138,6 +139,7 @@ export async function handle(request: Request, env: Env, upstream: Upstream = fe
   const url = new URL(request.url);
   if (!env.CANONICAL_HOST) return reject(503, 'Proxy hostname is not configured.');
   if (url.protocol !== 'https:' || url.host !== env.CANONICAL_HOST) return reject(421, 'Request must use the configured proxy hostname over HTTPS.');
+  if (url.pathname === '/' && (request.method === 'GET' || request.method === 'HEAD')) return landing(request.method);
   if (url.pathname === '/seal') {
     if (url.search) return reject(400, 'Sealing requests cannot include query parameters.');
     return issue(request, env);
