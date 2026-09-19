@@ -10,7 +10,6 @@ try {
   if (options.help) {
     console.log(help);
   } else {
-    const env = childEnvironment(process.env);
     const foreign = await foreignCli(process.env);
     if (foreign) console.error(`shopify-cli-condom: warning: ${foreign} bypasses this wrapper; uninstall it on development machines.`);
     const require = createRequire(import.meta.url);
@@ -20,6 +19,7 @@ try {
     const theme = await prepareTheme(options.path);
     const handlers = new Map<NodeJS.Signals, () => void>();
     try {
+      const env = childEnvironment(process.env, theme.home);
       const child = spawn(process.execPath, [entry, ...cliArgs(options, theme.directory)], {
         cwd: theme.directory, env, stdio: 'inherit', shell: false,
       });

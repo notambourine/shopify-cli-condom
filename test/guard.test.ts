@@ -3,8 +3,17 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, readFile, rm, lstat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { parse, childEnvironment, cliArgs, prepareTheme, foreignCli } from '../src/guard.ts';
+import { parse, childEnvironment as environment, cliArgs, prepareTheme, foreignCli } from '../src/guard.ts';
 import type { Theme } from '../src/guard.ts';
+
+const isolatedHome = join(tmpdir(), 'isolated-cli');
+const state = {
+  HOME: isolatedHome, USERPROFILE: isolatedHome,
+  APPDATA: join(isolatedHome, 'config'), LOCALAPPDATA: join(isolatedHome, 'data'),
+  XDG_CONFIG_HOME: join(isolatedHome, 'config'), XDG_DATA_HOME: join(isolatedHome, 'data'),
+  XDG_CACHE_HOME: join(isolatedHome, 'cache'), XDG_STATE_HOME: join(isolatedHome, 'state'),
+};
+const childEnvironment = (source: Record<string, string | undefined>, platform?: NodeJS.Platform) => environment(source, isolatedHome, platform);
 
 function parseDev(argv: string[]) {
   const options = parse(argv);
@@ -36,24 +45,25 @@ test('does not inherit targeting, node injection, or other Shopify configuration
     SHOPIFY_FLAG_ALLOW_LIVE: '1', SHOPIFY_FLAG_THEME_ID: '123', SHOPIFY_FLAG_ENVIRONMENT: 'production',
     SHOPIFY_FLAG_STORE: 'production', SHOPIFY_CLI_PLUGINS: '/plugin', NODE_OPTIONS: '--import=/injection.js',
   });
-  assert.deepEqual(env, { HOME: '/home/test', SHOPIFY_CLI_THEME_TOKEN: 'test-token' });
+  assert.deepEqual(env, { ...state, SHOPIFY_CLI_THEME_TOKEN: 'test-token' });
   assert.throws(() => childEnvironment({}), /SHOPIFY_CLI_THEME_TOKEN/);
   assert.deepEqual(childEnvironment({ Path: 'C:\\bin', SystemRoot: 'C:\\Windows', SHOPIFY_CLI_THEME_TOKEN: 't' }, 'win32'),
-    { Path: 'C:\\bin', SystemRoot: 'C:\\Windows', SHOPIFY_CLI_THEME_TOKEN: 't' });
-  assert.deepEqual(childEnvironment({ path: '/bin', SHOPIFY_CLI_THEME_TOKEN: 't' }, 'linux'), { SHOPIFY_CLI_THEME_TOKEN: 't' });
+    { ...state, Path: 'C:\\bin', SystemRoot: 'C:\\Windows', SHOPIFY_CLI_THEME_TOKEN: 't' });
+  assert.deepEqual(childEnvironment({ path: '/bin', SHOPIFY_CLI_THEME_TOKEN: 't' }, 'linux'), { ...state, SHOPIFY_CLI_THEME_TOKEN: 't' });
+  assert.deepEqual(childEnvironment({ home: 'unsafe', UserProfile: 'unsafe', AppData: 'unsafe', LocalAppData: 'unsafe', XDG_CONFIG_HOME: 'unsafe', SHOPIFY_CLI_THEME_TOKEN: 't' }, 'win32'), { ...state, SHOPIFY_CLI_THEME_TOKEN: 't' });
 });
 
 test('routes sealed tokens through the proxy and nowhere else', () => {
   const sealed = 'shptka_sealed_00ff';
   assert.deepEqual(childEnvironment({ SHOPIFY_CLI_THEME_TOKEN: sealed, SHOPIFY_CLI_CONDOM_PROXY: 'condom.example.workers.dev' }),
-    { SHOPIFY_CLI_THEME_TOKEN: sealed, SHOPIFY_CLI_THEME_KIT_ACCESS_DOMAIN: 'condom.example.workers.dev' });
+    { ...state, SHOPIFY_CLI_THEME_TOKEN: sealed, SHOPIFY_CLI_THEME_KIT_ACCESS_DOMAIN: 'condom.example.workers.dev' });
   assert.throws(() => childEnvironment({ SHOPIFY_CLI_THEME_TOKEN: sealed }), /requires SHOPIFY_CLI_CONDOM_PROXY/);
   assert.throws(() => childEnvironment({ SHOPIFY_CLI_THEME_TOKEN: 'shptka_raw', SHOPIFY_CLI_CONDOM_PROXY: 'condom.example.workers.dev' }), /sealed token/);
   for (const proxy of ['https://condom.example', 'condom.example/path', 'localhost', 'evil.example:443']) {
     assert.throws(() => childEnvironment({ SHOPIFY_CLI_THEME_TOKEN: sealed, SHOPIFY_CLI_CONDOM_PROXY: proxy }), /hostname/);
   }
   assert.deepEqual(childEnvironment({ SHOPIFY_CLI_THEME_TOKEN: 't', SHOPIFY_CLI_THEME_KIT_ACCESS_DOMAIN: 'attacker.example' }),
-    { SHOPIFY_CLI_THEME_TOKEN: 't' });
+    { ...state, SHOPIFY_CLI_THEME_TOKEN: 't' });
 });
 
 test('detects a Shopify CLI reachable through PATH', async () => {

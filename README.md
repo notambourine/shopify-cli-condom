@@ -31,11 +31,14 @@ Themes need `layout/` and `templates/`. Run `shopify-cli-condom --help` for all 
 - The wrapper accepts only `dev` and builds the Shopify CLI command.
 - Shopify receives no theme ID, live-theme flag, environment, `push`, or `publish`.
 - Repository `shopify.theme.toml` files cannot affect the command.
+- Each session uses fresh CLI storage, excluding cached theme IDs and user plugins.
 - Inherited `SHOPIFY_FLAG_*`, `NODE_OPTIONS`, and unrelated environment variables are removed.
 - The bundled Shopify CLI is pinned. Consumer `node_modules/.bin` exposes `shopify-cli-condom`, not `shopify`.
 - A separate Shopify CLI on `PATH` triggers a bypass warning.
 
 Shopify CLI receives a temporary directory with an empty `shopify.theme.toml` and links to the working tree. Edits remain live. Restart after adding a top-level theme directory that did not exist at startup.
+
+Each run allocates a new development theme. CLI login state and cached storefront passwords are not inherited.
 
 The theme's `.shopifyignore` is preserved. Ignore lists defined in TOML environments are not. Proxy environment variables are not supported.
 
