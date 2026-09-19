@@ -5,17 +5,25 @@ import { promisify } from 'node:util';
 import { mkdtemp, mkdir, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { PLATFORM_PACKAGES } from '../scripts/bundle-platforms.ts';
 
 const pkg = resolve(import.meta.dirname, '..');
 
-test('a consumer install exposes shopify-cli-condom but not shopify', { timeout: 120_000 }, async () => {
+test('the tarball includes every supported platform and installs only the wrapper command', { timeout: 300_000 }, async () => {
   const root = await mkdtemp(join(tmpdir(), 'condom-install-'));
   const env = { ...process.env, npm_config_cache: join(root, 'cache') };
   const run = (file: string, args: string[], options: { cwd: string }) =>
-    promisify(execFile)(file, args, { env, ...options });
+    promisify(execFile)(file, args, { env, maxBuffer: 64 * 1024 * 1024, ...options });
   try {
     const { stdout } = await run('npm', ['pack', '--json', '--pack-destination', root], { cwd: pkg });
-    const packed = JSON.parse(stdout) as [{ filename: string }];
+    const packed = JSON.parse(stdout) as [{ filename: string; files: { path: string }[] }];
+    const paths = packed[0].files.map((file) => file.path);
+    for (const name of PLATFORM_PACKAGES) {
+      assert.ok(
+        paths.some((path) => path.startsWith(`node_modules/${name}/`)),
+        `${name} is missing from the tarball`,
+      );
+    }
     const tarball = join(root, packed[0].filename);
     const consumer = join(root, 'consumer');
     await mkdir(consumer);
