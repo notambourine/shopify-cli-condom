@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { handle } from '../src/handler.ts';
 import type { Env } from '../src/handler.ts';
 import { generateKeyPair, importPublicKey, seal } from '../src/seal.ts';
+import { openPreview, sealPreview } from '../src/preview-session.ts';
 
 const keys = await generateKeyPair();
 const publicKey = await importPublicKey(keys.publicJwk);
@@ -104,7 +105,8 @@ test('looks up even newly created themes before accepting writes', async () => {
 
 test('proxies storefront rendering only for development preview themes', async () => {
   const { seen, fetcher } = upstream((entry) => (entry.url.includes('/cli/admin/') ? roleReply(entry) : new Response('<html>', { status: 302, headers: { location: '/password' } })));
-  const headers = { 'X-Shopify-Shop': store, 'X-Shopify-Access-Token': sealed, cookie: '_shopify_essential=abc', authorization: 'Bearer sf', 'cf-connecting-ip': '1.1.1.1', host: 'proxy.example' };
+  const cookie = await sealPreview({ store, token: realToken }, { id: '111', cookie: 'abc' });
+  const headers = { 'X-Shopify-Shop': store, 'X-Shopify-Access-Token': sealed, cookie: `_shopify_essential=${cookie}`, authorization: 'Bearer sf', 'cf-connecting-ip': '1.1.1.1', host: 'proxy.example' };
   const denied = await handle(new Request('https://proxy.example/cli/sfr/collections/all?preview_theme_id=999&_fd=0', { headers }), env(), fetcher);
   assert.equal(denied.status, 403);
   const allowed = await handle(new Request('https://proxy.example/cli/sfr/?preview_theme_id=111&_fd=0&pb=0', { method: 'HEAD', headers }), env(), fetcher);
@@ -154,5 +156,78 @@ test('rotating the decryption secret invalidates existing blobs', async () => {
   const { seen, fetcher } = upstream(() => json({}));
   const rotated = { ...env(), PRIVATE_KEY_JWK: JSON.stringify((await generateKeyPair()).privateJwk) };
   assert.equal((await handle(admin(upsert(devGid)), rotated, fetcher)).status, 401);
+  assert.equal(seen.length, 0);
+});
+
+test('binds CLI preview cookies to a theme and rechecks its role on every request', async () => {
+  let role = 'DEVELOPMENT';
+  const { seen, fetcher } = upstream((entry) => entry.url.includes('/cli/admin/')
+    ? json({ data: { theme: { role } } })
+    : new Response(null, { status: 302, headers: [
+      ['location', '/password'],
+      ['set-cookie', '_shopify_essential=shopify-session; Path=/; Secure; HttpOnly'],
+      ['set-cookie', 'storefront_digest=password-session; Path=/; Secure'],
+    ] }));
+  const headers = { 'X-Shopify-Shop': store, 'X-Shopify-Access-Token': sealed };
+  const response = await handle(new Request('https://proxy.example/cli/sfr?preview_theme_id=111', { method: 'HEAD', headers }), env(), fetcher);
+  assert.equal(response.status, 302);
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  const cookies = response.headers.getSetCookie();
+  assert.equal(cookies.length, 2);
+  const essential = cookies[0]!.split(';')[0]!;
+  const wrapped = essential.slice('_shopify_essential='.length);
+  assert.deepEqual(await openPreview({ store, token: realToken }, wrapped), { id: '111', cookie: 'shopify-session' });
+  assert.match(cookies[0]!, /; Path=\/; Secure; HttpOnly$/);
+  const sessionHeaders = { ...headers, cookie: `${essential}; storefront_digest=password-session; preview_theme_id=999` };
+  const render = await handle(new Request('https://proxy.example/cli/sfr/collections/all?_fd=0', { headers: sessionHeaders }), env(), fetcher);
+  assert.equal(render.status, 302);
+  assert.equal(seen.length, 4);
+  assert.match(seen.at(-1)!.url, /preview_theme_id=111/);
+  assert.equal(seen.at(-1)!.headers.cookie, 'storefront_digest=password-session; _shopify_essential=shopify-session');
+  const password = await handle(new Request('https://proxy.example/cli/sfr/password', {
+    method: 'POST', headers: { ...sessionHeaders, 'content-type': 'application/x-www-form-urlencoded' }, body: 'password=fixture',
+  }), env(), fetcher);
+  assert.equal(password.status, 302);
+  assert.equal(seen.at(-1)!.body, 'password=fixture');
+  assert.match(seen.at(-1)!.url, /preview_theme_id=111/);
+  role = 'MAIN';
+  const promoted = await handle(new Request('https://proxy.example/cli/sfr/', { headers: sessionHeaders }), env(), fetcher);
+  assert.equal(promoted.status, 403);
+  assert.equal(seen.length, 7);
+});
+
+test('rejects missing, conflicting, tampered, and foreign preview context before forwarding', async () => {
+  const { seen, fetcher } = upstream(() => json({}));
+  const context = await sealPreview({ store, token: realToken }, { id: '111', cookie: 'upstream' });
+  const foreign = await sealPreview({ store, token: 'shptka_other' }, { id: '111', cookie: 'upstream' });
+  const otherStore = await sealPreview({ store: 'other.myshopify.com', token: realToken }, { id: '111', cookie: 'upstream' });
+  const tampered = context.replace(/^v1\.[^.]+/, 'v1.' + btoa(JSON.stringify({ id: '999', cookie: 'upstream' })).replace(/=+$/, ''));
+  const headers = { 'X-Shopify-Shop': store, 'X-Shopify-Access-Token': sealed };
+  for (const [query, cookie] of [
+    ['', ''], ['', '_shopify_essential=unsigned'],
+    ['?preview_theme_id=111&preview_theme_id=999', ''],
+    ['?preview_theme_id[]=111', ''], ['?preview_theme_id=', ''],
+    ['?preview_theme_id=111&Preview_Theme_Id=999', ''],
+    ['?preview_theme_id=999', `_shopify_essential=${context}`],
+    ['', `_shopify_essential=${context}; _shopify_essential=${context}`],
+    ['', `_shopify_essential=${foreign}`], ['', `_shopify_essential=${otherStore}`],
+    ['', `_shopify_essential=${tampered}`],
+  ]) {
+    assert.equal((await handle(new Request(`https://proxy.example/cli/sfr/${query}`, { headers: { ...headers, cookie: cookie! } }), env(), fetcher)).status, 403);
+  }
+  for (const body of ['preview_theme_id=999', 'preview_theme_id%5B%5D=999']) {
+    assert.equal((await handle(new Request('https://proxy.example/cli/sfr/?preview_theme_id=111', {
+      method: 'POST', headers: { ...headers, 'content-type': 'application/x-www-form-urlencoded' }, body,
+    }), env(), fetcher)).status, 403);
+  }
+  for (const [method, contentType, body, status] of [
+    ['DELETE', 'application/x-www-form-urlencoded', '', 405],
+    ['POST', 'application/json', '{"preview_theme_id":"999"}', 415],
+    ['POST', 'application/x-www-form-urlencoded', 'x'.repeat(10 * 1024 * 1024 + 1), 413],
+  ] as const) {
+    assert.equal((await handle(new Request('https://proxy.example/cli/sfr/?preview_theme_id=111', {
+      method, headers: { ...headers, 'content-type': contentType }, body,
+    }), env(), fetcher)).status, status);
+  }
   assert.equal(seen.length, 0);
 });

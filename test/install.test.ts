@@ -5,7 +5,7 @@ import { promisify } from 'node:util';
 import { mkdtemp, mkdir, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { PLATFORM_PACKAGES } from '../scripts/bundle-platforms.ts';
+import { PLATFORM_BINARIES } from '../scripts/bundle-platforms.ts';
 
 const pkg = resolve(import.meta.dirname, '..');
 
@@ -16,12 +16,11 @@ test('the tarball includes every supported platform and installs only the wrappe
     promisify(execFile)(file, args, { env, maxBuffer: 64 * 1024 * 1024, ...options });
   try {
     const { stdout } = await run('npm', ['pack', '--json', '--pack-destination', root], { cwd: pkg });
-    const packed = JSON.parse(stdout) as [{ filename: string; files: { path: string }[] }];
-    const paths = packed[0].files.map((file) => file.path);
-    for (const name of PLATFORM_PACKAGES) {
+    const packed = JSON.parse(stdout) as [{ filename: string; files: { path: string; size: number }[] }];
+    for (const [name, binary] of Object.entries(PLATFORM_BINARIES)) {
       assert.ok(
-        paths.some((path) => path.startsWith(`node_modules/${name}/`)),
-        `${name} is missing from the tarball`,
+        packed[0].files.some((file) => file.path === `node_modules/${name}/${binary}` && file.size > 0),
+        `${name}/${binary} is missing or empty in the tarball`,
       );
     }
     const tarball = join(root, packed[0].filename);

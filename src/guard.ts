@@ -1,5 +1,5 @@
 import { parseArgs } from 'node:util';
-import { mkdtemp, writeFile, symlink, realpath, stat, rm, access } from 'node:fs/promises';
+import { mkdir, mkdtemp, writeFile, symlink, realpath, stat, rm, access } from 'node:fs/promises';
 import { join, resolve, delimiter } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -17,7 +17,7 @@ export type DevOptions = {
 
 export type ParsedArgs = { help: true } | DevOptions;
 
-export type Theme = { directory: string; cleanup: () => Promise<void> };
+export type Theme = { directory: string; home: string; cleanup: () => Promise<void> };
 
 const liveReloadModes = new Set<string>(['hot-reload', 'full-page', 'off']);
 
@@ -63,6 +63,7 @@ export function parse(argv: string[]): ParsedArgs {
 
 export function childEnvironment(
   source: Record<string, string | undefined>,
+  home: string,
   platform: NodeJS.Platform = process.platform,
 ): Record<string, string | undefined> {
   const token = source.SHOPIFY_CLI_THEME_TOKEN?.trim();
@@ -74,7 +75,7 @@ export function childEnvironment(
   if (proxy && !token.startsWith(sealedPrefix)) throw new Error('SHOPIFY_CLI_CONDOM_PROXY requires a sealed token (shptka_sealed_...).');
   if (!proxy && token.startsWith(sealedPrefix)) throw new Error('A sealed token requires SHOPIFY_CLI_CONDOM_PROXY.');
   const permitted = new Set([
-    'PATH', 'HOME', 'USERPROFILE', 'SYSTEMROOT', 'WINDIR', 'COMSPEC', 'PATHEXT',
+    'PATH', 'SYSTEMROOT', 'WINDIR', 'COMSPEC', 'PATHEXT',
     'TMPDIR', 'TMP', 'TEMP', 'LANG', 'LC_ALL', 'LC_CTYPE', 'TERM', 'COLORTERM',
     'NO_COLOR', 'FORCE_COLOR', 'SSL_CERT_FILE', 'NODE_EXTRA_CA_CERTS',
     'SHOPIFY_CLI_THEME_TOKEN', 'SHOPIFY_CLI_NO_ANALYTICS',
@@ -82,6 +83,12 @@ export function childEnvironment(
   // Windows keeps the original casing (Path, SystemRoot, ComSpec), so exact matches drop PATH.
   const normalize = platform === 'win32' ? (key: string) => key.toUpperCase() : (key: string) => key;
   const env = Object.fromEntries(Object.entries(source).filter(([key]) => permitted.has(normalize(key))));
+  Object.assign(env, {
+    HOME: home, USERPROFILE: home,
+    APPDATA: join(home, 'config'), LOCALAPPDATA: join(home, 'data'),
+    XDG_CONFIG_HOME: join(home, 'config'), XDG_DATA_HOME: join(home, 'data'),
+    XDG_CACHE_HOME: join(home, 'cache'), XDG_STATE_HOME: join(home, 'state'),
+  });
   if (proxy) env.SHOPIFY_CLI_THEME_KIT_ACCESS_DOMAIN = proxy;
   return env;
 }
@@ -126,8 +133,10 @@ export async function prepareTheme(path?: string): Promise<Theme> {
     if (!info?.isDirectory()) throw new Error(`Missing theme directory: ${name}`);
   }
   const directory = await mkdtemp(join(tmpdir(), 'shopify-cli-condom-'));
+  const home = join(directory, '.cli-home');
   const cleanup = () => rm(directory, { recursive: true, force: true });
   try {
+    await mkdir(home);
     // An empty local config stops Shopify's upward search before it reaches repo defaults.
     await writeFile(join(directory, 'shopify.theme.toml'), '');
     for (const name of ['assets', 'blocks', 'config', 'layout', 'listings', 'locales', 'sections', 'snippets', 'templates', '.shopifyignore']) {
@@ -141,7 +150,7 @@ export async function prepareTheme(path?: string): Promise<Theme> {
       }
       await symlink(target, join(directory, name), info.isDirectory() ? 'junction' : 'file');
     }
-    return { directory, cleanup };
+    return { directory, home, cleanup };
   } catch (error) {
     await cleanup();
     throw error;
