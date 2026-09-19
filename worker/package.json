@@ -7,8 +7,11 @@
     "node": ">=24.0.0"
   },
   "scripts": {
+    "brand": "node scripts/build-brand.ts",
     "lint": "lockfile-lint --path package-lock.json --type npm --allowed-hosts npm --validate-https --validate-integrity --validate-package-names",
+    "pretypecheck": "npm run -s brand",
     "typecheck": "tsc --noEmit",
+    "pretest": "npm run -s brand",
     "test": "node --test 'test/*.test.ts'",
     "keygen": "node bin/keygen.ts",
     "seal": "node bin/seal.ts",
@@ -18,6 +21,7 @@
     "graphql": "17.0.2"
   },
   "devDependencies": {
+    "@notambourine/brand-kit": "1.4.0",
     "@types/node": "^26.6.1",
     "lockfile-lint": "^5.0.1",
     "typescript": "^7.0.2"

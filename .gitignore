@@ -2,3 +2,4 @@ node_modules/
 *.tgz
 .env*
 dist/
+worker/src/brand.generated.ts
