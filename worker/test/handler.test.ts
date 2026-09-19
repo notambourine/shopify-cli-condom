@@ -137,6 +137,7 @@ test('serves a public landing page without touching Shopify', async () => {
   assert.match(body, /Let agents build/);
   assert.match(body, /Theme development has no production ACL/);
   assert.match(body, /github\.com\/notambourine\/shopify-cli-condom/);
+  assert.match(body, /SHOPIFY_CLI_CONDOM_PROXY=proxy\.example/);
   const head = await handle(new Request('https://proxy.example/', { method: 'HEAD' }), env(), fetcher);
   assert.equal(head.status, 200);
   assert.equal(await head.text(), '');

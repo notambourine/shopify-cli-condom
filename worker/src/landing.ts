@@ -1,6 +1,6 @@
 import { brandMark, brandVariables } from './brand.generated.ts';
 
-const page = `<!doctype html>
+const render = (host: string) => `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -47,6 +47,11 @@ const page = `<!doctype html>
     .number { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: var(--r-pill); background: var(--support-soft); color: var(--support-fg); font-size: 12px; font-weight: 700; }
     h3 { margin-top: 52px; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
     .card p { margin: 16px 0 0; color: var(--fg3); font-size: 14px; }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start; }
+    .step h3 { margin-top: 0; font-size: 18px; }
+    .step p { margin: 16px 0 0; color: var(--fg3); font-size: 14px; }
+    pre { overflow-x: auto; margin: 20px 0 0; padding: 20px; background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--r-md); color: var(--fg2); font-size: 13px; line-height: 1.6; }
+    code { font-family: inherit; }
     .boundary { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
     .boundary p { max-width: 640px; margin: 24px 0 0; }
     .callout { padding: 28px; background: var(--accent-soft); border: 1px solid var(--accent); border-radius: var(--r-md); color: var(--fg1); font-size: 14px; }
@@ -55,7 +60,7 @@ const page = `<!doctype html>
     @media (max-width: 760px) {
       nav, main, footer { width: min(100% - 32px, 1120px); }
       .hero { padding: 72px 0 80px; }
-      .grid, .boundary { grid-template-columns: 1fr; }
+      .grid, .steps, .boundary { grid-template-columns: 1fr; }
       .boundary { gap: 32px; }
       .card { min-height: 0; }
       h3 { margin-top: 36px; }
@@ -107,6 +112,34 @@ const page = `<!doctype html>
         </article>
       </div>
     </section>
+    <section aria-labelledby="quickstart">
+      <div class="section-heading">
+        <p class="eyebrow">Quickstart</p>
+        <h2 id="quickstart">Three steps to a safe dev loop.</h2>
+        <p>Requires Node.js 24 or newer. The wrapper replaces the Shopify CLI in your theme project, so <code>node_modules/.bin</code> exposes <code>shopify-cli-condom</code> rather than <code>shopify</code>.</p>
+      </div>
+      <div class="steps">
+        <article class="step">
+          <h3>Add the script</h3>
+<pre><code>{
+  "scripts": {
+    "dev": "shopify-cli-condom dev --store your-store"
+  }
+}</code></pre>
+        </article>
+        <article class="step">
+          <h3>Point at the proxy</h3>
+<pre><code>SHOPIFY_CLI_CONDOM_PROXY=${host}
+SHOPIFY_CLI_THEME_TOKEN=shptka_sealed_...</code></pre>
+          <p>Your admin issues the sealed token. Without a proxy, supply a raw Theme Access token and keep production tokens in CI.</p>
+        </article>
+        <article class="step">
+          <h3>Develop</h3>
+<pre><code>npm run dev</code></pre>
+          <p>Every run allocates a fresh development theme. Theme IDs, environments, <code>push</code>, and <code>publish</code> are rejected before Shopify sees them.</p>
+        </article>
+      </div>
+    </section>
     <section class="boundary" aria-labelledby="boundary">
       <div>
         <p class="eyebrow">Security boundary</p>
@@ -123,8 +156,11 @@ const page = `<!doctype html>
 </body>
 </html>`;
 
-export function landing(method: string): Response {
-  return new Response(method === 'HEAD' ? null : page, {
+let cached: { host: string; page: string } | undefined;
+
+export function landing(method: string, host: string): Response {
+  if (cached?.host !== host) cached = { host, page: render(host) };
+  return new Response(method === 'HEAD' ? null : cached.page, {
     headers: {
       'cache-control': 'public, max-age=300',
       'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
