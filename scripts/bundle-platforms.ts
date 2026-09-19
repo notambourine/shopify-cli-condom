@@ -1,29 +1,39 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // npm resolves these by host platform, and a bundleDependencies tree is extracted as-is, so a
 // tarball packed on one machine leaves every other platform with no binary to run.
-export const PLATFORM_PACKAGES = [
-  '@esbuild/darwin-arm64',
-  '@esbuild/darwin-x64',
-  '@esbuild/linux-arm64',
-  '@esbuild/linux-x64',
-  '@esbuild/win32-x64',
-  '@ast-grep/napi-darwin-arm64',
-  '@ast-grep/napi-darwin-x64',
-  '@ast-grep/napi-linux-arm64-gnu',
-  '@ast-grep/napi-linux-arm64-musl',
-  '@ast-grep/napi-linux-x64-gnu',
-  '@ast-grep/napi-linux-x64-musl',
-  '@ast-grep/napi-win32-x64-msvc',
-];
+export const PLATFORM_BINARIES: Record<string, string> = {
+  '@esbuild/darwin-arm64': 'bin/esbuild',
+  '@esbuild/darwin-x64': 'bin/esbuild',
+  '@esbuild/linux-arm64': 'bin/esbuild',
+  '@esbuild/linux-x64': 'bin/esbuild',
+  '@esbuild/win32-x64': 'esbuild.exe',
+  '@ast-grep/napi-darwin-arm64': 'ast-grep-napi.darwin-arm64.node',
+  '@ast-grep/napi-darwin-x64': 'ast-grep-napi.darwin-x64.node',
+  '@ast-grep/napi-linux-arm64-gnu': 'ast-grep-napi.linux-arm64-gnu.node',
+  '@ast-grep/napi-linux-arm64-musl': 'ast-grep-napi.linux-arm64-musl.node',
+  '@ast-grep/napi-linux-x64-gnu': 'ast-grep-napi.linux-x64-gnu.node',
+  '@ast-grep/napi-linux-x64-musl': 'ast-grep-napi.linux-x64-musl.node',
+  '@ast-grep/napi-win32-x64-msvc': 'ast-grep-napi.win32-x64-msvc.node',
+};
 
 interface LockEntry {
   version: string;
   integrity: string;
+}
+
+function complete(dir: string, name: string, version: string, binary: string): boolean {
+  try {
+    const manifest = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')) as { name: string; version: string };
+    const file = lstatSync(join(dir, binary));
+    return manifest.name === name && manifest.version === version && file.isFile() && file.size > 0;
+  } catch {
+    return false;
+  }
 }
 
 export function bundlePlatforms(root: string): void {
@@ -33,16 +43,12 @@ export function bundlePlatforms(root: string): void {
   const staging = mkdtempSync(join(tmpdir(), 'condom-platforms-'));
 
   try {
-    for (const name of PLATFORM_PACKAGES) {
+    for (const [name, binary] of Object.entries(PLATFORM_BINARIES)) {
       const pinned = lock.packages[`node_modules/${name}`];
       if (!pinned) throw new Error(`${name} is not pinned in package-lock.json`);
 
       const dir = join(root, 'node_modules', name);
-      const manifest = join(dir, 'package.json');
-      if (existsSync(manifest)) {
-        const { version } = JSON.parse(readFileSync(manifest, 'utf8')) as { version: string };
-        if (version === pinned.version) continue;
-      }
+      if (complete(dir, name, pinned.version, binary)) continue;
 
       const output = execFileSync(
         'npm',
@@ -66,11 +72,16 @@ export function bundlePlatforms(root: string): void {
       const tarball = join(staging, packed.filename);
       if (!existsSync(tarball)) throw new Error(`npm reported ${packed.filename} but wrote no tarball`);
 
-      rmSync(dir, { recursive: true, force: true });
-      mkdirSync(dir, { recursive: true });
-      // GNU tar reads -C positionally and ignores it after the archive; cwd is unambiguous.
-      execFileSync('tar', ['--extract', '--gzip', '--strip-components=1', '--file', tarball], { cwd: dir });
-      if (!existsSync(manifest)) throw new Error(`${name} did not extract into node_modules`);
+      mkdirSync(dirname(dir), { recursive: true });
+      const extracted = mkdtempSync(join(dirname(dir), '.condom-platform-'));
+      try {
+        execFileSync('tar', ['--extract', '--gzip', '--strip-components=1', '--file', tarball], { cwd: extracted });
+        if (!complete(extracted, name, pinned.version, binary)) throw new Error(`${name} is missing its pinned manifest or binary`);
+        rmSync(dir, { recursive: true, force: true });
+        renameSync(extracted, dir);
+      } finally {
+        rmSync(extracted, { recursive: true, force: true });
+      }
 
       // stdout belongs to the `npm pack --json` this runs under.
       console.error(`bundled ${name}@${pinned.version}`);
