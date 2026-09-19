@@ -1,5 +1,6 @@
 node_modules/
 *.tgz
 .env*
+*.jwk
 dist/
 worker/src/brand.generated.ts
