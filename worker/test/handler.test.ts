@@ -136,6 +136,7 @@ test('serves a public landing page without touching Shopify', async () => {
   const body = await response.text();
   assert.match(body, /Let agents build/);
   assert.match(body, /agents, interns, or routine commands/);
+  assert.match(body, /One theme token can change the live store/);
   assert.match(body, /github\.com\/notambourine\/shopify-cli-condom/);
   assert.match(body, /SHOPIFY_CLI_CONDOM_PROXY=proxy\.example/);
   assert.match(body, /<link rel="icon" type="image\/svg\+xml" href="data:image\/svg\+xml;base64,/);
