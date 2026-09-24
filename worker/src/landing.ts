@@ -1,4 +1,4 @@
-import { brandMark, brandVariables } from './brand.generated.ts';
+import { brandFavicon, brandMark, brandVariables } from './brand.generated.ts';
 
 const render = (host: string) => `<!doctype html>
 <html lang="en">
@@ -7,6 +7,7 @@ const render = (host: string) => `<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Let agents and interns develop Shopify themes against a real store without giving routine tooling a path to the live theme.">
   <title>shopify-cli-condom - development without production access</title>
+  <link rel="icon" type="image/svg+xml" href="${brandFavicon}">
   <style>
     ${brandVariables}
     :root { color-scheme: dark; }
