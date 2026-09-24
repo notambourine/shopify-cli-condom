@@ -138,6 +138,7 @@ test('serves a public landing page without touching Shopify', async () => {
   assert.match(body, /agents, interns, or routine commands/);
   assert.match(body, /github\.com\/notambourine\/shopify-cli-condom/);
   assert.match(body, /SHOPIFY_CLI_CONDOM_PROXY=proxy\.example/);
+  assert.match(body, /<link rel="icon" type="image\/svg\+xml" href="data:image\/svg\+xml;base64,/);
   const head = await handle(new Request('https://proxy.example/', { method: 'HEAD' }), env(), fetcher);
   assert.equal(head.status, 200);
   assert.equal(await head.text(), '');
