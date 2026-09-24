@@ -5,8 +5,8 @@ const render = (host: string) => `<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Let agents and interns develop Shopify themes against a real store without giving routine tooling a path to the live theme.">
-  <title>shopify-cli-condom - development without production access</title>
+  <meta name="description" content="Develop Shopify themes against real store data without exposing live-theme operations to the development command.">
+  <title>shopify-cli-condom - development-only Shopify CLI</title>
   <link rel="icon" type="image/svg+xml" href="${brandFavicon}">
   <style>
     ${brandVariables}
@@ -82,9 +82,9 @@ const render = (host: string) => `<!doctype html>
   </nav>
   <main>
     <header class="hero">
-      <p class="eyebrow">Shopify theme safety</p>
-      <h1>Let agents build. Keep <em>production</em> out of reach.</h1>
-      <p class="lede">Develop Shopify themes against a real store without giving agents, interns, or routine commands a path to the live theme.</p>
+      <p class="eyebrow">Development-only Shopify CLI</p>
+      <h1>Develop Shopify themes against <em>real store data</em>.</h1>
+      <p class="lede">shopify-cli-condom keeps local preview and live reload while removing commands that select, modify, or publish the live theme.</p>
       <div class="actions">
         <a class="button" href="#setup">Set it up</a>
         <a class="text-link" href="#boundary">What it does not protect</a>
@@ -92,32 +92,32 @@ const render = (host: string) => `<!doctype html>
     </header>
     <section aria-labelledby="problem">
       <div class="section-heading">
-        <p class="eyebrow">The problem</p>
-        <h2 id="problem">One theme token can change the live store.</h2>
-        <p>Shopify has no way to give someone theme development access without also giving them the live theme. The token a contractor, intern, or coding agent uses for <code>theme dev</code> can also push over or publish the storefront your customers see.</p>
-        <p>One wrong theme ID, a stale config file, or an agent that decides to "just deploy it" is enough. Instructions in <code>AGENTS.md</code> ask nicely. They do not stop anything.</p>
+        <p class="eyebrow">Why it exists</p>
+        <h2 id="problem">Shopify theme tokens do not stop at development.</h2>
+        <p>A Theme Access token that runs <code>theme dev</code> can also modify or publish the live storefront. Shopify does not provide a development-only permission for that token.</p>
+        <p>Repository instructions cannot enforce the boundary. The wrapper and proxy enforce separate controls for the command and credential.</p>
       </div>
     </section>
     <section aria-labelledby="works">
       <div class="section-heading">
-        <p class="eyebrow">How it helps</p>
-        <h2 id="works">Keep the dev loop. Remove the ways to ship.</h2>
-        <p>Developers still run a local preview with hot reload against real store data. The paths to production are gone.</p>
+        <p class="eyebrow">How it works</p>
+        <h2 id="works">The wrapper limits the command. The proxy limits the credential.</h2>
+        <p>Use the wrapper by itself to constrain the command. Add the proxy when the raw Shopify credential must also stay out of the development environment.</p>
       </div>
       <div class="grid">
         <article class="card">
           <span class="number">01</span>
-          <h3>A command that only develops</h3>
+          <h3>Constrained command</h3>
           <p>The wrapper runs <code>dev</code> on a fresh development theme. Theme IDs, live-theme access, <code>push</code>, <code>publish</code>, environments, and extra CLI arguments are rejected.</p>
         </article>
         <article class="card">
           <span class="number">02</span>
-          <h3>A token that is not the real one</h3>
-          <p>Developers get a sealed, expiring token. The raw Shopify credential stays with the admin and never lands on a laptop or in an agent's environment.</p>
+          <h3>Sealed credential</h3>
+          <p>An admin can issue a sealed, expiring credential instead of sharing the raw Theme Access token with the development environment.</p>
         </article>
         <article class="card">
           <span class="number">03</span>
-          <h3>A proxy that checks every call</h3>
+          <h3>Checked operations</h3>
           <p>The proxy forwards only development-theme operations and rechecks the theme's role before every write and preview. Anything aimed at the live theme is refused.</p>
         </article>
       </div>
@@ -125,15 +125,15 @@ const render = (host: string) => `<!doctype html>
     <section id="setup" aria-labelledby="setup-heading">
       <div class="section-heading">
         <p class="eyebrow">Setup</p>
-        <h2 id="setup-heading">An admin issues a token. Developers run one script.</h2>
+        <h2 id="setup-heading">Issue a credential, then run the project script.</h2>
       </div>
       <div class="setup">
         <div>
           <h3>Developers</h3>
           <p>In the theme project, with Node.js 24 or newer.</p>
           <ol>
-            <li>Install the wrapper.
-<pre><code>npm install --save-dev @notambourine/shopify-cli-condom</code></pre>
+            <li>Install the package tarball with lifecycle scripts disabled.
+<pre><code>npm install --ignore-scripts --save-dev /path/to/shopify-cli-condom.tgz</code></pre>
             </li>
             <li>Add a script.
 <pre><code>{
@@ -153,7 +153,7 @@ SHOPIFY_CLI_THEME_TOKEN=shptka_sealed_...</code></pre>
         </div>
         <div>
           <h3>Admins</h3>
-          <p>Seal the store's Theme Access token for each person, signed with your SSH key.</p>
+          <p>Issue a sealed credential for each person. Hosted issuance requires your SSH signature.</p>
           <ol>
             <li>From the repository's <code>worker/</code> directory:
 <pre><code>npm run -s issue -- \\
@@ -171,8 +171,8 @@ SHOPIFY_CLI_THEME_TOKEN=shptka_sealed_...</code></pre>
     <section class="boundary" id="boundary" aria-labelledby="boundary-heading">
       <div>
         <p class="eyebrow">Limits</p>
-        <h2 id="boundary-heading">Prevents accidents, not theft.</h2>
-        <p>A raw production token is still full store access through any other tool. Keep it in CI or behind the proxy, and keep your deployment approvals.</p>
+        <h2 id="boundary-heading">The wrapper is not a credential boundary.</h2>
+        <p>The wrapper limits its own command. A raw Theme Access token still has full store access through other tools. Keep production credentials in CI or behind the proxy, and keep deployment approvals in place.</p>
       </div>
       <div class="callout">
         <p><strong>Development only.</strong> The wrapper and proxy refuse live-theme operations by design.</p>
