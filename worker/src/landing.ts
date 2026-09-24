@@ -1,4 +1,4 @@
-import { brandFavicon, brandMark, brandVariables } from './brand.generated.ts';
+import { brandFavicon, brandMark, brandVariables, ogImage } from './brand.generated.ts';
 
 const render = (host: string) => `<!doctype html>
 <html lang="en">
@@ -8,6 +8,18 @@ const render = (host: string) => `<!doctype html>
   <meta name="description" content="Develop Shopify themes against real store data without exposing live-theme operations to the development command.">
   <title>shopify-cli-condom - development-only Shopify CLI</title>
   <link rel="icon" type="image/svg+xml" href="${brandFavicon}">
+  <link rel="canonical" href="https://${host}/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="NoTambourine">
+  <meta property="og:url" content="https://${host}/">
+  <meta property="og:title" content="shopify-cli-condom - development-only Shopify CLI">
+  <meta property="og:description" content="Develop Shopify themes against real store data without exposing live-theme operations to the development command.">
+  <meta property="og:image" content="https://${host}/og.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="shopify-cli-condom: Develop Shopify themes against real store data.">
+  <meta name="twitter:card" content="summary_large_image">
   <style>
     ${brandVariables}
     :root { color-scheme: dark; }
@@ -199,6 +211,18 @@ export function landing(method: string, host: string): Response {
       'referrer-policy': 'no-referrer',
       'x-content-type-options': 'nosniff',
       'x-frame-options': 'DENY',
+    },
+  });
+}
+
+const ogBytes = Uint8Array.from(atob(ogImage), (c) => c.charCodeAt(0));
+
+export function og(method: string): Response {
+  return new Response(method === 'HEAD' ? null : ogBytes, {
+    headers: {
+      'cache-control': 'public, max-age=86400',
+      'content-type': 'image/png',
+      'x-content-type-options': 'nosniff',
     },
   });
 }
