@@ -5,20 +5,20 @@ const render = (host: string) => `<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Develop Shopify themes against real store data without exposing live-theme operations to the development command.">
-  <title>shopify-cli-condom - development-only Shopify CLI</title>
+  <meta name="description" content="A hosted proxy that gives developers and AI agents a sealed Shopify theme token that cannot touch the live theme.">
+  <title>shopify-cli-condom proxy - sealed Shopify theme tokens</title>
   <link rel="icon" type="image/svg+xml" href="${brandFavicon}">
   <link rel="canonical" href="https://${host}/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="NoTambourine">
   <meta property="og:url" content="https://${host}/">
-  <meta property="og:title" content="shopify-cli-condom - development-only Shopify CLI">
-  <meta property="og:description" content="Develop Shopify themes against real store data without exposing live-theme operations to the development command.">
+  <meta property="og:title" content="shopify-cli-condom proxy - sealed Shopify theme tokens">
+  <meta property="og:description" content="A hosted proxy that gives developers and AI agents a sealed Shopify theme token that cannot touch the live theme.">
   <meta property="og:image" content="https://${host}/og.png">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="shopify-cli-condom: Develop Shopify themes against real store data.">
+  <meta property="og:image:alt" content="shopify-cli-condom proxy: sealed Shopify theme tokens.">
   <meta name="twitter:card" content="summary_large_image">
   <style>
     ${brandVariables}
@@ -62,12 +62,6 @@ const render = (host: string) => `<!doctype html>
     .number { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: var(--r-pill); background: var(--support-soft); color: var(--support-fg); font-size: 12px; font-weight: 700; }
     h3 { margin-top: 40px; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
     .card p { margin: 16px 0 0; color: var(--fg3); font-size: 14px; }
-    .setup { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
-    .setup h3 { margin: 0; }
-    .setup > div > p { margin: 12px 0 0; color: var(--fg3); font-size: 14px; }
-    ol { margin: 24px 0 0; padding: 0; list-style: none; counter-reset: step; }
-    ol li { counter-increment: step; margin-top: 28px; font-size: 14px; }
-    ol li::before { content: counter(step, decimal-leading-zero) "  "; color: var(--support-fg); font-weight: 700; }
     pre { overflow-x: auto; margin: 12px 0 0; padding: 20px; background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--r-md); color: var(--fg2); font-size: 13px; line-height: 1.6; }
     code { font-family: inherit; }
     .boundary { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
@@ -81,7 +75,7 @@ const render = (host: string) => `<!doctype html>
       nav, main, footer { width: min(100% - 32px, 1120px); }
       .hero { padding: 56px 0 72px; }
       section { padding: 64px 0; }
-      .grid, .setup, .boundary { grid-template-columns: 1fr; }
+      .grid, .boundary { grid-template-columns: 1fr; }
       .boundary { gap: 32px; }
       footer { flex-direction: column; }
     }
@@ -94,11 +88,11 @@ const render = (host: string) => `<!doctype html>
   </nav>
   <main>
     <header class="hero">
-      <p class="eyebrow">Development-only Shopify CLI</p>
-      <h1>Develop Shopify themes against <em>real store data</em>.</h1>
-      <p class="lede">shopify-cli-condom keeps local preview and live reload while removing commands that select, modify, or publish the live theme.</p>
+      <p class="eyebrow">Hosted Shopify theme proxy</p>
+      <h1>Hand out store access, <em>not the live theme</em>.</h1>
+      <p class="lede">This proxy keeps your Theme Access token. Developers and AI agents get a sealed, expiring token that can only work on development themes.</p>
       <div class="actions">
-        <a class="button" href="#setup">Set it up</a>
+        <a class="button" href="#setup">Connect a project</a>
         <a class="text-link" href="#boundary">What it does not protect</a>
       </div>
     </header>
@@ -106,95 +100,53 @@ const render = (host: string) => `<!doctype html>
       <div class="section-heading">
         <p class="eyebrow">Why it exists</p>
         <h2 id="problem">Shopify theme tokens do not stop at development.</h2>
-        <p>A Theme Access token that runs <code>theme dev</code> can also modify or publish the live storefront. Shopify does not provide a development-only permission for that token.</p>
-        <p>Repository instructions cannot enforce the boundary. The wrapper and proxy enforce separate controls for the command and credential.</p>
+        <p>A Theme Access token that runs <code>theme dev</code> can also modify or publish the live storefront. Shopify has no development-only scope for it, and repository instructions cannot enforce one.</p>
       </div>
     </section>
     <section aria-labelledby="works">
       <div class="section-heading">
         <p class="eyebrow">How it works</p>
-        <h2 id="works">The wrapper limits the command. The proxy limits the credential.</h2>
-        <p>Use the wrapper by itself to constrain the command. Add the proxy when the raw Shopify credential must also stay out of the development environment.</p>
+        <h2 id="works">The real token never leaves the proxy.</h2>
       </div>
       <div class="grid">
         <article class="card">
           <span class="number">01</span>
-          <h3>Constrained command</h3>
-          <p>The wrapper runs <code>dev</code> on a fresh development theme. Theme IDs, live-theme access, <code>push</code>, <code>publish</code>, environments, and extra CLI arguments are rejected.</p>
+          <h3>Sealed</h3>
+          <p>An admin seals the Theme Access token for one store with an expiry. The developer environment only ever holds the sealed copy.</p>
         </article>
         <article class="card">
           <span class="number">02</span>
-          <h3>Sealed credential</h3>
-          <p>An admin can issue a sealed, expiring credential instead of sharing the raw Theme Access token with the development environment.</p>
+          <h3>Checked</h3>
+          <p>The proxy forwards only the operations <code>theme dev</code> needs and rechecks the theme's role before every write and preview. Anything aimed at the live theme is refused.</p>
         </article>
         <article class="card">
           <span class="number">03</span>
-          <h3>Checked operations</h3>
-          <p>The proxy forwards only development-theme operations and rechecks the theme's role before every write and preview. Anything aimed at the live theme is refused.</p>
+          <h3>Revocable</h3>
+          <p>Sealed tokens expire on their own. Rotating the Theme Access token revokes every one of them at once.</p>
         </article>
       </div>
     </section>
     <section id="setup" aria-labelledby="setup-heading">
       <div class="section-heading">
         <p class="eyebrow">Setup</p>
-        <h2 id="setup-heading">Issue a credential, then run the project script.</h2>
-      </div>
-      <div class="setup">
-        <div>
-          <h3>Developers</h3>
-          <p>In the theme project, with Node.js 24 or newer.</p>
-          <ol>
-            <li>Install the package tarball with lifecycle scripts disabled.
-<pre><code>npm install --ignore-scripts --save-dev /path/to/shopify-cli-condom.tgz</code></pre>
-            </li>
-            <li>Add a script.
-<pre><code>{
-  "scripts": {
-    "dev": "shopify-cli-condom dev --store your-store"
-  }
-}</code></pre>
-            </li>
-            <li>Set the sealed token from your admin through a secret manager.
+        <h2 id="setup-heading">Point shopify-cli-condom at this proxy.</h2>
+        <p>Set the sealed token from your admin through a secret manager.</p>
 <pre><code>SHOPIFY_CLI_CONDOM_PROXY=${host}
 SHOPIFY_CLI_THEME_TOKEN=shptka_sealed_...</code></pre>
-            </li>
-            <li>Develop.
-<pre><code>npm run dev</code></pre>
-            </li>
-          </ol>
-        </div>
-        <div>
-          <h3>Admins</h3>
-          <p>Issue a sealed credential for each person. Hosted issuance requires your SSH signature.</p>
-          <ol>
-            <li>From the repository's <code>worker/</code> directory:
-<pre><code>npm run -s issue -- \\
-  --secret 'op://Shopify/store/Theme Access token' \\
-  --key ~/.ssh/admin.pub \\
-  --store your-store \\
-  --label employee</code></pre>
-            </li>
-            <li>Send the printed token through a trusted channel. Reissue it when it expires.</li>
-          </ol>
-          <p>To run your own proxy or seal tokens locally, follow the <a href="https://github.com/notambourine/shopify-cli-condom#host-the-proxy">self-hosting guide</a>.</p>
-        </div>
+        <p>Install the wrapper from the <a href="https://github.com/notambourine/shopify-cli-condom">README</a>.</p>
       </div>
     </section>
     <section class="boundary" id="boundary" aria-labelledby="boundary-heading">
-      <div>
-        <p class="eyebrow">Limits</p>
-        <h2 id="boundary-heading">The wrapper is not a credential boundary.</h2>
-        <p>The wrapper limits its own command. A raw Theme Access token still has full store access through other tools. Keep production credentials in CI or behind the proxy, and keep deployment approvals in place.</p>
-      </div>
+      <p class="eyebrow" id="boundary-heading">Limits</p>
       <div class="callout">
-        <p><strong>Development only.</strong> The wrapper and proxy refuse live-theme operations by design.</p>
-        <p>A stolen sealed token can still create, edit, and delete development themes on its store until it expires. Rotating the Theme Access token revokes every sealed token at once.</p>
+        <p><strong>Development only.</strong> The proxy refuses live-theme operations by design.</p>
+        <p>A stolen sealed token can still create, edit, and delete development themes on its store until it expires.</p>
       </div>
     </section>
   </main>
   <footer>
     <strong>Senior engineers. No tambourine.</strong>
-    <span>Open source by NoTambourine</span>
+    <span>Made with &lt;3 by NoTambourine. In daily use keeping Claude off client live themes at 50 deploys a day (Q3 average).</span>
   </footer>
 </body>
 </html>`;
