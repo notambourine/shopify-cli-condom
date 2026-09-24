@@ -1,7 +1,11 @@
 {
   "name": "@notambourine/shopify-cli-condom",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Development-only Shopify CLI wrapper for working on real stores.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/notambourine/shopify-cli-condom.git"
+  },
   "type": "module",
   "bin": {
     "shopify-cli-condom": "dist/bin/shopify-cli-condom.js"
