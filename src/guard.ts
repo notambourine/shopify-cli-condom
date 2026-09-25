@@ -7,6 +7,7 @@ export type LiveReload = 'hot-reload' | 'full-page' | 'off';
 
 export type DevOptions = {
   help?: false;
+  command: 'dev';
   store: string;
   path?: string;
   port?: string;
@@ -15,7 +16,19 @@ export type DevOptions = {
   'live-reload'?: LiveReload;
 };
 
-export type ParsedArgs = { help: true } | DevOptions;
+export type PullOptions = {
+  help?: false;
+  command: 'pull';
+  store: string;
+  path?: string;
+  live?: boolean;
+  theme?: string;
+  nodelete?: boolean;
+};
+
+export type CommandOptions = DevOptions | PullOptions;
+
+export type ParsedArgs = { help: true } | CommandOptions;
 
 export type Theme = { directory: string; home: string; cleanup: () => Promise<void> };
 
@@ -25,26 +38,38 @@ const errorCode = (error: unknown): string | undefined =>
   typeof error === 'object' && error !== null && 'code' in error ? String(error.code) : undefined;
 
 export const help = `Usage: shopify-cli-condom dev --store STORE [options]
+       shopify-cli-condom pull --store STORE (--live | --theme ID) [options]
 
 Uses SHOPIFY_CLI_THEME_TOKEN for authentication.
 Set SHOPIFY_CLI_CONDOM_PROXY to a proxy hostname to use a sealed token instead.
-Options: --path DIR, --port PORT, --open, --nodelete,
-         --live-reload hot-reload|full-page|off, --help
+dev options:  --path DIR, --port PORT, --open, --nodelete,
+              --live-reload hot-reload|full-page|off, --help
+pull options: --path DIR, --nodelete, --help
 
-Only development-theme allocation is allowed. No arbitrary CLI passthrough.
+dev works on a fresh development theme. pull reads any theme and writes only
+local files. No arbitrary CLI passthrough.
 This prevents accidents through this command; only the proxy restricts your token.`;
 
 export const sealedPrefix = 'shptka_sealed_';
 
+const commandOptions = {
+  dev: {
+    port: { type: 'string' }, open: { type: 'boolean' }, 'live-reload': { type: 'string' },
+  },
+  pull: {
+    live: { type: 'boolean' }, theme: { type: 'string' },
+  },
+} as const;
+
 export function parse(argv: string[]): ParsedArgs {
   if (argv.length === 0 || (argv.length === 1 && argv[0] === '--help')) return { help: true };
-  if (argv[0] !== 'dev') throw new Error('Only the dev command is allowed.');
+  const command = argv[0];
+  if (command !== 'dev' && command !== 'pull') throw new Error('Only the dev and pull commands are allowed.');
   const { values, positionals } = parseArgs({
     args: argv.slice(1), strict: true, allowPositionals: true,
     options: {
-      store: { type: 'string' }, path: { type: 'string' }, port: { type: 'string' },
-      open: { type: 'boolean' }, nodelete: { type: 'boolean' },
-      'live-reload': { type: 'string' }, help: { type: 'boolean' },
+      store: { type: 'string' }, path: { type: 'string' }, nodelete: { type: 'boolean' }, help: { type: 'boolean' },
+      ...commandOptions[command],
     },
   });
   if (positionals.length) throw new Error('Positional arguments and CLI passthrough are not allowed.');
@@ -52,13 +77,20 @@ export function parse(argv: string[]): ParsedArgs {
   if (!values.store || !/^[a-z0-9][a-z0-9-]*(?:\.myshopify\.com)?$/.test(values.store)) {
     throw new Error('--store must be a Shopify store handle or myshopify.com domain.');
   }
-  if (values.port !== undefined && (!/^\d+$/.test(values.port) || +values.port < 1 || +values.port > 65535)) {
+  if (command === 'pull') {
+    const { live, theme } = values as { live?: boolean; theme?: string };
+    if (Boolean(live) === (theme !== undefined)) throw new Error('pull requires exactly one of --live or --theme ID.');
+    if (theme !== undefined && !/^\d{1,20}$/.test(theme)) throw new Error('--theme must be a numeric theme ID.');
+    return { command, ...values } as PullOptions;
+  }
+  const { port, 'live-reload': liveReload } = values as { port?: string; 'live-reload'?: string };
+  if (port !== undefined && (!/^\d+$/.test(port) || +port < 1 || +port > 65535)) {
     throw new Error('--port must be between 1 and 65535.');
   }
-  if (values['live-reload'] !== undefined && !liveReloadModes.has(values['live-reload'])) {
+  if (liveReload !== undefined && !liveReloadModes.has(liveReload)) {
     throw new Error('Invalid --live-reload mode.');
   }
-  return values as DevOptions;
+  return { command, ...values } as DevOptions;
 }
 
 export function childEnvironment(
@@ -113,8 +145,14 @@ export async function foreignCli(
   return null;
 }
 
-export function cliArgs(options: DevOptions, directory: string): string[] {
-  const args = ['theme', 'dev', '--store', options.store, '--path', directory];
+export function cliArgs(options: CommandOptions, directory: string): string[] {
+  const args = ['theme', options.command, '--store', options.store, '--path', directory];
+  if (options.command === 'pull') {
+    // --force skips a directory confirmation prompt that fails without a TTY; the wrapper owns the directory.
+    args.push('--force', ...(options.live ? ['--live'] : ['--theme', options.theme!]));
+    if (options.nodelete) args.push('--nodelete');
+    return args;
+  }
   for (const key of ['port', 'live-reload'] as const) {
     const value = options[key];
     if (value !== undefined) args.push(`--${key}`, value);
@@ -123,7 +161,13 @@ export function cliArgs(options: DevOptions, directory: string): string[] {
   return args;
 }
 
-export async function prepareTheme(path?: string): Promise<Theme> {
+const pulledDirectories = ['assets', 'blocks', 'config', 'layout', 'locales', 'sections', 'snippets', 'templates'];
+
+export async function prepareTheme(path?: string, command: CommandOptions['command'] = 'dev'): Promise<Theme> {
+  if (command === 'pull') {
+    // Pull writes through the links, so a directory missing from the source would land in the temporary root.
+    for (const name of pulledDirectories) await mkdir(join(resolve(path ?? '.'), name), { recursive: true });
+  }
   const source = await realpath(resolve(path ?? '.'));
   for (const name of ['layout', 'templates']) {
     const info = await stat(join(source, name)).catch((error: unknown) => {
@@ -139,7 +183,7 @@ export async function prepareTheme(path?: string): Promise<Theme> {
     await mkdir(home);
     // An empty local config stops Shopify's upward search before it reaches repo defaults.
     await writeFile(join(directory, 'shopify.theme.toml'), '');
-    for (const name of ['assets', 'blocks', 'config', 'layout', 'listings', 'locales', 'sections', 'snippets', 'templates', '.shopifyignore']) {
+    for (const name of [...pulledDirectories, 'listings', '.shopifyignore']) {
       const target = join(source, name);
       let info;
       try {

@@ -5,7 +5,7 @@ const render = (host: string) => `<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A hosted proxy that gives developers and AI agents a sealed Shopify theme token that cannot touch the live theme.">
+  <meta name="description" content="Sealed Shopify theme tokens for developers and AI agents. Pull the live theme; never change it.">
   <title>shopify-cli-condom proxy - sealed Shopify theme tokens</title>
   <link rel="icon" type="image/svg+xml" href="${brandFavicon}">
   <link rel="canonical" href="https://${host}/">
@@ -13,7 +13,7 @@ const render = (host: string) => `<!doctype html>
   <meta property="og:site_name" content="NoTambourine">
   <meta property="og:url" content="https://${host}/">
   <meta property="og:title" content="shopify-cli-condom proxy - sealed Shopify theme tokens">
-  <meta property="og:description" content="A hosted proxy that gives developers and AI agents a sealed Shopify theme token that cannot touch the live theme.">
+  <meta property="og:description" content="Sealed Shopify theme tokens for developers and AI agents. Pull the live theme; never change it.">
   <meta property="og:image" content="https://${host}/og.png">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
@@ -90,7 +90,7 @@ const render = (host: string) => `<!doctype html>
     <header class="hero">
       <p class="eyebrow">Hosted Shopify theme proxy</p>
       <h1>Hand out store access, <em>not the live theme</em>.</h1>
-      <p class="lede">This proxy keeps your Theme Access token. Developers and AI agents get a sealed, expiring token that can only work on development themes.</p>
+      <p class="lede">We keep your Theme Access token. Developers and agents get a sealed, expiring copy: pull any theme, change only development themes.</p>
       <div class="actions">
         <a class="button" href="#setup">Connect a project</a>
         <a class="text-link" href="#boundary">What it does not protect</a>
@@ -100,7 +100,7 @@ const render = (host: string) => `<!doctype html>
       <div class="section-heading">
         <p class="eyebrow">Why it exists</p>
         <h2 id="problem">Shopify theme tokens do not stop at development.</h2>
-        <p>A Theme Access token that runs <code>theme dev</code> can also modify or publish the live storefront. Shopify has no development-only scope for it, and repository instructions cannot enforce one.</p>
+        <p>A token that runs <code>theme dev</code> can also publish over the live storefront. Shopify has no development-only scope.</p>
       </div>
     </section>
     <section aria-labelledby="works">
@@ -112,17 +112,17 @@ const render = (host: string) => `<!doctype html>
         <article class="card">
           <span class="number">01</span>
           <h3>Sealed</h3>
-          <p>An admin seals the Theme Access token for one store with an expiry. The developer environment only ever holds the sealed copy.</p>
+          <p>Bound to one store with an expiry. Developers only hold the sealed copy.</p>
         </article>
         <article class="card">
           <span class="number">02</span>
           <h3>Checked</h3>
-          <p>The proxy forwards only the operations <code>theme dev</code> needs and rechecks the theme's role before every write and preview. Anything aimed at the live theme is refused.</p>
+          <p>Only <code>theme dev</code> and <code>theme pull</code> get through. Reads reach any theme; writes reach development themes only.</p>
         </article>
         <article class="card">
           <span class="number">03</span>
           <h3>Revocable</h3>
-          <p>Sealed tokens expire on their own. Rotating the Theme Access token revokes every one of them at once.</p>
+          <p>Tokens expire on their own. Rotate the Theme Access token to revoke them all.</p>
         </article>
       </div>
     </section>
@@ -130,7 +130,7 @@ const render = (host: string) => `<!doctype html>
       <div class="section-heading">
         <p class="eyebrow">Setup</p>
         <h2 id="setup-heading">Point shopify-cli-condom at this proxy.</h2>
-        <p>Set the sealed token from your admin through a secret manager.</p>
+        <p>Load the sealed token from a secret manager.</p>
 <pre><code>SHOPIFY_CLI_CONDOM_PROXY=${host}
 SHOPIFY_CLI_THEME_TOKEN=shptka_sealed_...</code></pre>
         <p>Install the wrapper from the <a href="https://github.com/notambourine/shopify-cli-condom">README</a>.</p>
@@ -139,8 +139,8 @@ SHOPIFY_CLI_THEME_TOKEN=shptka_sealed_...</code></pre>
     <section class="boundary" id="boundary" aria-labelledby="boundary-heading">
       <p class="eyebrow" id="boundary-heading">Limits</p>
       <div class="callout">
-        <p><strong>Development only.</strong> The proxy refuses live-theme operations by design.</p>
-        <p>A stolen sealed token can still create, edit, and delete development themes on its store until it expires.</p>
+        <p><strong>Read-only on live.</strong> Every live-theme write is refused.</p>
+        <p>A stolen sealed token can still read every theme and create, edit, or delete development themes until it expires.</p>
       </div>
     </section>
   </main>

@@ -1,14 +1,16 @@
 # shopify-cli-condom
 
 Let developers and coding agents work on a Shopify theme with real store data,
-without handing them a route to the live theme.
+without handing them a way to change the live theme.
 
-You get one command: `dev`. Local preview and live reload work as usual. Theme
-IDs, live-theme access, `publish`, `push`, environments, and arbitrary CLI
-arguments do not get through.
+You get two commands. `dev` runs on a fresh development theme with local
+preview and live reload. `pull` downloads any theme, the live one included, into
+your working tree. `publish`, `push`, environments, and arbitrary CLI arguments
+do not get through.
 
 Want the raw Shopify token off development machines too? The NoTambourine proxy
-swaps it for a sealed, expiring token that only works on development themes.
+swaps it for a sealed, expiring token that reads any theme and writes only to
+development themes.
 
 ## Start developing
 
@@ -23,7 +25,8 @@ Add the development command:
 ```json
 {
   "scripts": {
-    "dev": "shopify-cli-condom dev --store your-store"
+    "dev": "shopify-cli-condom dev --store your-store",
+    "pull": "shopify-cli-condom pull --store your-store --live"
   }
 }
 ```
@@ -34,13 +37,17 @@ Provide `SHOPIFY_CLI_THEME_TOKEN` through a secret manager, then run:
 npm run dev
 ```
 
-The theme needs `layout/` and `templates/`. `shopify-cli-condom --help` lists
-the supported development options.
+`dev` needs `layout/` and `templates/`. `pull` takes `--live` or `--theme ID`
+and creates missing theme directories. `shopify-cli-condom --help` lists the
+supported options.
 
 ## What the wrapper changes
 
-- Only `dev` exists. The wrapper builds the Shopify CLI arguments itself.
-- Every run gets a fresh development theme and its own Shopify CLI storage.
+- Only `dev` and `pull` exist. The wrapper builds the Shopify CLI arguments itself.
+- Every `dev` run gets a fresh development theme. Every run gets its own Shopify
+  CLI storage.
+- `pull` overwrites changed files in your working tree and deletes local theme
+  files missing from the remote theme unless you pass `--nodelete`.
 - Repository environments and cached theme IDs have no say in the command.
 - Shopify flags, plugin paths, `NODE_OPTIONS`, and unrelated credentials stay
   out of the child environment.
@@ -66,9 +73,9 @@ place.
 
 The package does not install agent command guards.
 
-The optional proxy narrows a sealed token to development-theme operations. A
-stolen sealed token can still create, edit, and delete development themes on its
-store until it expires. Tokens cannot be revoked one at a time; rotate the Theme
+The optional proxy lets a sealed token read any theme and write only to
+development themes. A stolen sealed token can still read every theme and create,
+edit, and delete development themes on its store until it expires. Tokens cannot be revoked one at a time; rotate the Theme
 Access token or the server decryption key to invalidate them all.
 
 See [proxy operations](https://github.com/notambourine/shopify-cli-condom/blob/main/worker/README.md)
@@ -90,8 +97,8 @@ themes, and the installed binary shape, all without contacting Shopify. Worker
 tests cover sealing, the GraphQL allowlist, previews, and fake upstream
 requests.
 
-Shopify references: [theme dev](https://shopify.dev/docs/api/shopify-cli/theme/theme-dev)
-and [environment precedence](https://shopify.dev/docs/storefronts/themes/tools/cli/environments).
+Shopify references: [theme dev](https://shopify.dev/docs/api/shopify-cli/theme/theme-dev),
+[theme pull](https://shopify.dev/docs/api/shopify-cli/theme/theme-pull), and [environment precedence](https://shopify.dev/docs/storefronts/themes/tools/cli/environments).
 
 ---
 

@@ -30,28 +30,44 @@ test('resolves variable defaults instead of trusting the variables object alone'
   allowed(evaluate({ query, variables: { role: 'DEVELOPMENT' } }));
 });
 
-test('scopes theme reads and writes to the referenced theme id', () => {
+test('scopes theme writes to the referenced theme id', () => {
   for (const [query, variables] of [
     ['mutation themeFilesUpsert($files: [OnlineStoreThemeFilesUpsertFileInput!]!, $themeId: ID!) { themeFilesUpsert(files: $files, themeId: $themeId) { upsertedThemeFiles { filename } } }', { files: [], themeId: gid }],
     ['mutation themeFilesDelete($themeId: ID!, $files: [String!]!) { themeFilesDelete(themeId: $themeId, files: $files) { deletedThemeFiles { filename } } }', { themeId: gid, files: ['a'] }],
     ['mutation themeDelete($id: ID!) { themeDelete(id: $id) { deletedThemeId } }', { id: gid }],
     ['mutation themeUpdate($id: ID!, $input: OnlineStoreThemeInput!) { themeUpdate(id: $id, input: $input) { theme { id } } }', { id: gid, input: { name: 'x' } }],
-    ['query getTheme($id: ID!) { theme(id: $id) { id name role } }', { id: gid }],
-    ['query getThemeFileChecksums($id: ID!, $after: String) { theme(id: $id) { files(first: 250, after: $after) { nodes { filename checksumMd5 } } } }', { id: gid }],
-    [`query { theme(id: "${gid}") { id } }`, undefined],
   ] as const) {
     const decision = allowed(evaluate({ query, variables }));
     assert.deepEqual(decision.allow && decision.themeIds, ['123']);
   }
   denied(evaluate({ query: 'mutation themeDelete($id: ID!) { themeDelete(id: $id) { deletedThemeId } }', variables: {} }), /theme id/);
-  denied(evaluate({ query: 'query { theme(id: "gid://shopify/OnlineStoreTheme/123?x=1") { id } }' }), /theme id/);
+  denied(evaluate({ query: 'mutation { themeDelete(id: "gid://shopify/OnlineStoreTheme/123?x=1") { deletedThemeId } }' }), /theme id/);
 });
 
-test('denies publishing, duplication, unfiltered listings, and anything outside themes', () => {
+test('allows theme pull reads on any theme without a role check', () => {
+  for (const [query, variables] of [
+    ['query getThemes($after: String) { themes(first: 50, after: $after) { nodes { id name role processing } } }', {}],
+    ['query { themes(first: 50, roles: [MAIN]) { nodes { id } } }', undefined],
+    ['query getTheme($id: ID!) { theme(id: $id) { id name role } }', { id: gid }],
+    ['query getThemeFileChecksums($id: ID!, $after: String) { theme(id: $id) { files(first: 250, after: $after) { nodes { filename checksumMd5 } } } }', { id: gid }],
+    ['query getThemeFileBodies($id: ID!, $filenames: [String!]) { theme(id: $id) { files(first: 250, filenames: $filenames) { nodes { filename body { __typename } } } } }', { id: gid, filenames: ['layout/theme.liquid'] }],
+  ] as const) {
+    const decision = allowed(evaluate({ query, variables }));
+    assert.deepEqual(decision.allow && decision.themeIds, []);
+  }
+});
+
+test('binds each field to its operation type', () => {
+  denied(evaluate({ query: `query { themeDelete(id: "${gid}") { deletedThemeId } }` }), /themeDelete is not allowed/);
+  denied(evaluate({ query: `query { themeFilesUpsert(themeId: "${gid}", files: []) { upsertedThemeFiles { filename } } }` }), /themeFilesUpsert is not allowed/);
+  denied(evaluate({ query: 'query { themeCreate(name: "x", role: DEVELOPMENT) { theme { id } } }' }), /themeCreate is not allowed/);
+  denied(evaluate({ query: `mutation { theme(id: "${gid}") { id } }` }), /theme is not allowed/);
+  denied(evaluate({ query: 'mutation { themes(first: 1) { nodes { id } } }' }), /themes is not allowed/);
+});
+
+test('denies publishing, duplication, and anything outside themes', () => {
   denied(evaluate({ query: `mutation { themePublish(id: "${gid}") { theme { id } } }` }), /themePublish/);
   denied(evaluate({ query: `mutation { themeDuplicate(id: "${gid}", name: "copy") { theme { id } } }` }), /themeDuplicate/);
-  denied(evaluate({ query: 'query getThemes($after: String) { themes(first: 50, after: $after) { nodes { id role } } }' }), /roles/);
-  denied(evaluate({ query: 'query { themes(first: 50, roles: [DEVELOPMENT, MAIN]) { nodes { id } } }' }), /roles/);
   denied(evaluate({ query: 'query { shop { name } }' }), /shop is not allowed/);
   denied(evaluate({ query: 'query { customers(first: 1) { nodes { id } } }' }), /customers/);
   denied(evaluate({ query: 'subscription { x }' }), /Subscriptions|not allowed/);
