@@ -85,13 +85,31 @@ test('forwards development-theme writes with the real token and an allowlisted h
 
 test('refuses writes to a theme Shopify reports as anything but development', async () => {
   const { seen, fetcher } = upstream(roleReply);
-  const response = await handle(admin(upsert(liveGid)), env(), fetcher);
-  assert.equal(response.status, 403);
-  assert.match(await message(response), /999 is not a development theme/);
-  assert.equal(seen.length, 1);
+  for (const write of [
+    upsert(liveGid),
+    { query: 'mutation themeFilesDelete($themeId: ID!, $files: [String!]!) { themeFilesDelete(themeId: $themeId, files: $files) { deletedThemeFiles { filename } } }', variables: { themeId: liveGid, files: ['layout/theme.liquid'] } },
+    { query: 'mutation themeUpdate($id: ID!) { themeUpdate(id: $id, input: { name: "x" }) { theme { id } } }', variables: { id: liveGid } },
+    { query: `mutation { themeDelete(id: "${liveGid}") { deletedThemeId } }` },
+  ]) {
+    const response = await handle(admin(write), env(), fetcher);
+    assert.equal(response.status, 403);
+    assert.match(await message(response), /999 is not a development theme/);
+  }
+  assert.equal(seen.length, 4);
+  assert.ok(seen.every((entry) => /\{ role \}/.test(entry.body)));
   const publish = await handle(admin({ query: `mutation { themePublish(id: "${devGid}") { theme { id } } }` }), env(), fetcher);
   assert.equal(publish.status, 403);
+  assert.equal(seen.length, 4);
+});
+
+test('forwards live-theme reads without a role lookup', async () => {
+  const { seen, fetcher } = upstream(() => json({ data: { theme: { files: { nodes: [] } } } }));
+  const pull = { query: 'query getThemeFileChecksums($id: ID!) { theme(id: $id) { files(first: 250) { nodes { filename checksumMd5 } } } }', variables: { id: liveGid } };
+  const response = await handle(admin(pull), env(), fetcher);
+  assert.equal(response.status, 200);
   assert.equal(seen.length, 1);
+  assert.deepEqual(JSON.parse(seen[0]!.body), pull);
+  assert.equal(seen[0]!.headers['x-shopify-access-token'], realToken);
 });
 
 test('looks up even newly created themes before accepting writes', async () => {
@@ -136,7 +154,7 @@ test('serves a public landing page without touching Shopify', async () => {
   const body = await response.text();
   assert.match(body, /Hand out store access/);
   assert.match(body, /Shopify theme tokens do not stop at development/);
-  assert.match(body, /stolen sealed token can still create/);
+  assert.match(body, /stolen sealed token can still read every theme/);
   assert.match(body, /github\.com\/notambourine\/shopify-cli-condom/);
   assert.match(body, /SHOPIFY_CLI_CONDOM_PROXY=proxy\.example/);
   assert.match(body, /<link rel="icon" type="image\/svg\+xml" href="data:image\/svg\+xml;base64,/);

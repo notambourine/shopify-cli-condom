@@ -7,9 +7,9 @@ export type Decision =
   | { allow: true; field: string; themeIds: string[] }
   | { allow: false; reason: string };
 
-const readOnlyFields = new Set(['onlineStore', 'metafieldDefinitions']);
-const themeScopedFields: Record<string, string> = {
-  theme: 'id', themeDelete: 'id', themeUpdate: 'id', themeFilesUpsert: 'themeId', themeFilesDelete: 'themeId',
+const queryFields = new Set(['onlineStore', 'metafieldDefinitions', 'theme', 'themes']);
+const themeScopedMutations: Record<string, string> = {
+  themeDelete: 'id', themeUpdate: 'id', themeFilesUpsert: 'themeId', themeFilesDelete: 'themeId',
 };
 
 const deny = (reason: string): Decision => ({ allow: false, reason });
@@ -66,16 +66,13 @@ export function evaluate(request: GraphqlRequest): Decision {
   if (typeof provided !== 'object' || Array.isArray(provided)) return deny('Variables must be an object.');
   const args = argumentValues(root, variableValues(operation, provided));
 
-  if (readOnlyFields.has(name)) return allow(name);
+  if (operation.operation === 'query') {
+    return queryFields.has(name) ? allow(name) : deny(`${name} is not allowed through the proxy.`);
+  }
   if (name === 'themeCreate') {
     return args.get('role') === 'DEVELOPMENT' ? allow(name) : deny('themeCreate requires role DEVELOPMENT.');
   }
-  if (name === 'themes') {
-    const roles = args.get('roles');
-    return Array.isArray(roles) && roles.length > 0 && roles.every((role) => role === 'DEVELOPMENT')
-      ? allow(name) : deny('themes requires roles: [DEVELOPMENT].');
-  }
-  const argument = themeScopedFields[name];
+  const argument = themeScopedMutations[name];
   if (argument !== undefined) {
     const id = themeId(args.get(argument));
     return id === null ? deny(`${name} requires a theme id.`) : allow(name, [id]);

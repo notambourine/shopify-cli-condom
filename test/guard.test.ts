@@ -15,7 +15,7 @@ const state = {
 };
 const childEnvironment = (source: Record<string, string | undefined>, platform?: NodeJS.Platform) => environment(source, isolatedHome, platform);
 
-function parseDev(argv: string[]) {
+function parseCommand(argv: string[]) {
   const options = parse(argv);
   assert.ok(!options.help);
   return options;
@@ -30,12 +30,25 @@ test('rejects production targeting, aliases, commands, and passthrough', () => {
   ]) assert.throws(() => parse(args));
 });
 
+test('pulls from exactly one explicit theme and nothing that writes remotely', () => {
+  for (const args of [
+    [], ['--live', '--theme', '123'], ['--theme', 'Live theme'], ['--theme', '-1'], ['--development'],
+    ['--live', '--environment', 'production'], ['--live', '--password', 'secret'], ['--live', '--only', '*'],
+    ['--live', '--port', '9292'], ['--live', '--force'], ['--live', '--', '--theme', '1'], ['--live', 'extra'],
+  ]) assert.throws(() => parse(['pull', '--store', 'store', ...args]), `pull ${args.join(' ')}`);
+  assert.throws(() => parse(['pull', '--live']), /--store/);
+  assert.deepEqual(cliArgs(parseCommand(['pull', '--store', 'store', '--live']), '/theme'),
+    ['theme', 'pull', '--store', 'store', '--path', '/theme', '--force', '--live']);
+  assert.deepEqual(cliArgs(parseCommand(['pull', '--store', 'store', '--theme=123', '--nodelete']), '/theme'),
+    ['theme', 'pull', '--store', 'store', '--path', '/theme', '--force', '--theme', '123', '--nodelete']);
+});
+
 test('requires an explicit store and validates development options', () => {
   for (const args of [[], ['--store', 'evil.example'], ['--store', 'store', '--port', '0'],
     ['--store', 'store', '--live-reload', 'unknown']]) {
     assert.throws(() => parse(['dev', ...args]));
   }
-  assert.deepEqual(cliArgs(parseDev(['dev', '--store', 'example.myshopify.com', '--port=9293', '--open']), '/theme'),
+  assert.deepEqual(cliArgs(parseCommand(['dev', '--store', 'example.myshopify.com', '--port=9293', '--open']), '/theme'),
     ['theme', 'dev', '--store', 'example.myshopify.com', '--path', '/theme', '--port', '9293', '--open']);
 });
 
@@ -84,6 +97,23 @@ test('names the missing theme directory', async () => {
     await mkdir(join(root, 'layout'));
     await assert.rejects(prepareTheme(root), /Missing theme directory: templates/);
   } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('pull creates missing theme directories in the source so writes survive cleanup', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'condom-pull-'));
+  const target = join(root, 'new-theme');
+  let theme: Theme | undefined;
+  try {
+    theme = await prepareTheme(target, 'pull');
+    assert.equal((await lstat(join(theme.directory, 'sections'))).isSymbolicLink(), true);
+    await writeFile(join(theme.directory, 'sections', 'header.liquid'), 'pulled');
+    await theme.cleanup();
+    assert.equal(await readFile(join(target, 'sections', 'header.liquid'), 'utf8'), 'pulled');
+    assert.equal((await lstat(join(target, 'blocks'))).isDirectory(), true);
+  } finally {
+    await theme?.cleanup();
     await rm(root, { recursive: true, force: true });
   }
 });

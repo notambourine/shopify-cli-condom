@@ -4,9 +4,9 @@ Run the proxy when developers need Shopify theme previews without receiving the
 raw Theme Access token.
 
 The database-free Cloudflare Worker accepts sealed, expiring credentials. It
-forwards only the Shopify operations required for development themes and checks
-the target theme's role before every scoped operation, including storefront
-previews.
+forwards only the Shopify operations `theme dev` and `theme pull` need. Queries
+read any theme. Every mutation and storefront preview first checks that the
+target theme is a development theme.
 
 ## Host the proxy
 
@@ -27,8 +27,8 @@ The admin key must be ECDSA P-256. Verify its fingerprint with `ssh-keygen -lf`
 before uploading the public key. Keep the private key in the admin's SSH agent.
 Local-only sealing can omit `ADMIN_SSH_PUBLIC_KEY`.
 
-Smoke-test theme sync, live reload, password-protected previews, denied
-live-theme operations, and rate limits before use. Recheck proxy routing and
+Smoke-test theme sync, live reload, password-protected previews, live-theme
+pull, denied live-theme writes, and rate limits before use. Recheck proxy routing and
 token redaction whenever the pinned Shopify CLI changes.
 
 ## Issue a credential
@@ -70,7 +70,7 @@ ownership of a copied credential.
 ## Limits and revocation
 
 A sealed credential is bound to one store and an expiry. Until then, it can
-create, edit, and delete development themes. Individual revocation is not
+read every theme and create, edit, and delete development themes. Individual revocation is not
 available. Rotate the Theme Access token or server decryption key to invalidate
 all issued credentials. Changing the admin SSH key affects new issuance only.
 Removing a person's GitHub or 1Password access does not revoke a credential they

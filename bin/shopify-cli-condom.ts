@@ -16,7 +16,7 @@ try {
     const manifestPath = require.resolve('@shopify/cli/package.json');
     const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as { bin: { shopify: string } };
     const entry = resolve(dirname(manifestPath), manifest.bin.shopify);
-    const theme = await prepareTheme(options.path);
+    const theme = await prepareTheme(options.path, options.command);
     const handlers = new Map<NodeJS.Signals, () => void>();
     try {
       const env = childEnvironment(process.env, theme.home);
