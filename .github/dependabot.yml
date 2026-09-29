@@ -1,7 +1,9 @@
 version: 2
 updates:
   - package-ecosystem: npm
-    directory: /
+    directories:
+      - /
+      - /worker
     schedule:
       interval: weekly
     cooldown:
@@ -12,16 +14,11 @@ updates:
         applies-to: security-updates
         patterns:
           - "*"
-  - package-ecosystem: npm
-    directory: /worker
-    schedule:
-      interval: weekly
-    cooldown:
-      default-days: 2
-      semver-major-days: 5
-    groups:
-      security:
-        applies-to: security-updates
+      # The bundled CLI defines the proxy's allowed operations, so it gets its own review.
+      shopify-cli:
+        patterns:
+          - "@shopify/cli"
+      npm:
         patterns:
           - "*"
   - package-ecosystem: github-actions
@@ -33,5 +30,8 @@ updates:
     groups:
       security:
         applies-to: security-updates
+        patterns:
+          - "*"
+      actions:
         patterns:
           - "*"
