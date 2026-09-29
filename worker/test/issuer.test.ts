@@ -60,8 +60,9 @@ test('does not echo raw credentials from command failures', async () => {
   });
 });
 
+const fake = async (file: string) => file === 'gtimeout' ? secret : 'signature';
+
 test('does not expose reflected secrets in error or malformed success responses', async () => {
-  const fake = async (file: string) => file === 'gtimeout' ? secret : 'signature';
   for (const status of [400, 401, 429, 500, 503]) {
     await assert.rejects(issueCredential(options, async () => new Response(secret, { status }), fake), (error: Error) => {
       assert.equal(error.message.includes(secret), false);
