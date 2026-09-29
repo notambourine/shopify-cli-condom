@@ -26,7 +26,7 @@
     "prepack": "npm run build && node scripts/bundle-platforms.ts"
   },
   "dependencies": {
-    "@shopify/cli": "4.8.0"
+    "@shopify/cli": "4.8.2"
   },
   "devDependencies": {
     "@types/node": "^26.6.1",
