@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { createRequire } from 'node:module';
@@ -12,10 +12,19 @@ import { childEnvironment, prepareTheme } from '../src/guard.ts';
 test('the pinned CLI cannot reuse the user theme cache or load user plugins', async () => {
   const root = await mkdtemp(join(tmpdir(), 'condom-isolation-'));
   const cli = dirname(createRequire(import.meta.url).resolve('@shopify/cli/package.json'));
-  const moduleUrl = (name: string) => JSON.stringify(pathToFileURL(join(cli, 'dist', name)).href);
+  const dist = join(cli, 'dist');
+  const files = await readdir(dist);
+  // Chunk hashes change on every CLI release; the minified export aliases are still pinned.
+  const moduleUrl = async (...markers: string[]) => {
+    for (const name of files.filter((file) => file.endsWith('.js'))) {
+      const code = await readFile(join(dist, name), 'utf8');
+      if (markers.every((marker) => code.includes(marker))) return JSON.stringify(pathToFileURL(join(dist, name)).href);
+    }
+    throw new Error(`No @shopify/cli module contains ${markers.join(', ')}`);
+  };
   const script = `
-    import {ShopifyConfig} from ${moduleUrl('custom-oclif-loader-BWAMUFQ4.js')};
-    import {g as getTheme, h as setTheme, r as setStore} from ${moduleUrl('chunk-GNBRCK7L.js')};
+    import {ShopifyConfig} from ${await moduleUrl('as ShopifyConfig}')};
+    import {g as getTheme, h as setTheme, r as setStore} from ${await moduleUrl('Setting development theme', 'A store is required')};
     import {mkdirSync, writeFileSync} from 'node:fs';
     import {join} from 'node:path';
     const config = new ShopifyConfig({root: ${JSON.stringify(cli)}});
