@@ -12,7 +12,7 @@ jobs:
   fleet:
     permissions:
       contents: read
-    uses: notambourine/fleet-actions/.github/workflows/fleet-ci.yml@ac0bf619711d3e15ca18212ac001aa55c5cb533d # v1.9.1
+    uses: notambourine/fleet-actions/.github/workflows/fleet-ci.yml@e182477307d59169a66549fc554b0f84a36ce4f6 # v1.9.2
     with:
       vet: true # One manifest with one dependency; the scan costs seconds.
 
