@@ -102,4 +102,4 @@ Shopify references: [theme dev](https://shopify.dev/docs/api/shopify-cli/theme/t
 
 ---
 
-Senior engineers. No tambourine. Open source by [NoTambourine](https://notambourine.com).
+Open source by [NoTambourine](https://notambourine.com) · a boutique AI-native engineering agency.
