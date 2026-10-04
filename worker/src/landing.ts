@@ -18,7 +18,7 @@ const render = (host: string) => `<!doctype html>
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="shopify-cli-condom proxy: sealed Shopify theme tokens.">
+  <meta property="og:image:alt" content="Develop Shopify themes against real store data. Live reload without live-theme access.">
   <meta name="twitter:card" content="summary_large_image">
   <style>
     ${brandVariables}
@@ -121,7 +121,7 @@ const render = (host: string) => `<!doctype html>
         </article>
         <article class="card">
           <span class="number">03</span>
-          <h3>Revocable</h3>
+          <h3>Expiring</h3>
           <p>Tokens expire on their own. Rotate the Theme Access token to revoke them all.</p>
         </article>
       </div>
@@ -145,8 +145,8 @@ SHOPIFY_CLI_THEME_TOKEN=shptka_sealed_...</code></pre>
     </section>
   </main>
   <footer>
-    <strong>Senior engineers. No tambourine.</strong>
-    <span>Made with &lt;3 by NoTambourine. In daily use keeping Claude off client live themes at 50 deploys a day (Q3 average).</span>
+    <strong>Engineering you can see in the numbers.</strong>
+    <span>Open source by NoTambourine · a boutique AI-native engineering agency. In daily use keeping Claude off client live themes at 50 deploys a day (Q3 average).</span>
   </footer>
 </body>
 </html>`;
