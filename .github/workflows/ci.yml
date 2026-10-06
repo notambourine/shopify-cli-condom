@@ -12,12 +12,13 @@ jobs:
   fleet:
     permissions:
       contents: read
-    uses: notambourine/fleet-actions/.github/workflows/fleet-ci.yml@e182477307d59169a66549fc554b0f84a36ce4f6 # v1.9.2
+    uses: notambourine/fleet-actions/.github/workflows/fleet-ci.yml@0b96150ba8e1689573848ba12dc9dc573058b43f # v1.10.1
     with:
       vet: true # One manifest with one dependency; the scan costs seconds.
+      runs-on: blacksmith-2vcpu-ubuntu-2404
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     permissions:
       contents: read
     timeout-minutes: 15
@@ -54,7 +55,7 @@ jobs:
       - run: npm test
 
   worker:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     permissions:
       contents: read
     timeout-minutes: 10
