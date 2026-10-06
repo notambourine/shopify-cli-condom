@@ -14,6 +14,7 @@ concurrency:
 jobs:
   release:
     name: publish to npm
+    # Stays GitHub-hosted, not blacksmith: npm trusted publishing rejects self-hosted runners.
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
