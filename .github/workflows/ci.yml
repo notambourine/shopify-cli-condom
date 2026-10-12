@@ -12,7 +12,7 @@ jobs:
   fleet:
     permissions:
       contents: read
-    uses: notambourine/fleet-actions/.github/workflows/fleet-ci.yml@0b96150ba8e1689573848ba12dc9dc573058b43f # v1.10.1
+    uses: notambourine/fleet-actions/.github/workflows/fleet-ci.yml@395ca93d41a57ade33fa1ad846befac455f063ac # v1.10.2
     with:
       vet: true # One manifest with one dependency; the scan costs seconds.
       runs-on: blacksmith-2vcpu-ubuntu-2404
@@ -27,7 +27,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -41,7 +41,7 @@ jobs:
       # then emits as a hardlink entry that consumers cannot extract.
       - run: sfw npm ci --ignore-scripts
 
-      - uses: notambourine/wormhook@73bed37a77d68bb85a61af208caaf0785aa00498 # v0.34.0
+      - uses: notambourine/wormhook@f50af233c374a4646a310b2f53f3ecff3972d163 # v0.35.1
         with:
           mode: deep
 
@@ -67,7 +67,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
