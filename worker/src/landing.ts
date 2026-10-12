@@ -1,4 +1,4 @@
-import { brandFavicon, brandMark, brandVariables, ogImage } from './brand.generated.ts';
+import { brandFavicon, brandMark, brandStyles, ogImage } from './brand.generated.ts';
 
 const render = (host: string) => `<!doctype html>
 <html lang="en">
@@ -21,62 +21,44 @@ const render = (host: string) => `<!doctype html>
   <meta property="og:image:alt" content="Develop Shopify themes against real store data. Live reload without live-theme access.">
   <meta name="twitter:card" content="summary_large_image">
   <style>
-    ${brandVariables}
+    ${brandStyles}
     :root { color-scheme: dark; }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--fg2);
-      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
-      font-size: 16px;
-      line-height: 1.7;
-      letter-spacing: 0.01em;
-    }
-    a { color: inherit; }
-    nav, main, footer { width: min(1120px, calc(100% - 48px)); margin: 0 auto; }
-    nav { height: 80px; display: flex; align-items: center; justify-content: space-between; }
-    .brand { display: flex; align-items: center; gap: 12px; color: var(--fg1); text-decoration: none; font-size: 13px; font-weight: 700; }
+    body { margin: 0; }
+    nav, main, footer { width: min(1120px, calc(100% - var(--sp-12))); margin: 0 auto; }
+    nav { height: var(--sp-20); display: flex; align-items: center; justify-content: space-between; }
+    nav a, footer a { color: inherit; }
+    nav a:hover, footer a:hover { border-bottom-color: currentColor; }
+    .brand { display: flex; align-items: center; gap: var(--sp-3); color: var(--fg1); font-family: var(--font-accent); font-size: var(--fs-label); font-weight: var(--fw-bold); }
+    nav .brand:hover { border-bottom-color: transparent; }
     .brand svg { width: 34px; height: 34px; fill: var(--accent); }
-    .source { color: var(--fg3); font-size: 13px; text-underline-offset: 4px; }
-    .source:hover, .source:focus-visible { color: var(--fg1); }
-    :focus-visible { outline: 3px solid var(--support); outline-offset: 4px; }
-    .hero { padding: 96px 0 88px; max-width: 900px; }
-    .eyebrow { margin: 0 0 20px; color: var(--accent-fg); font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
-    h1, h2, h3 { margin: 0; color: var(--fg1); font-family: system-ui, sans-serif; letter-spacing: -0.03em; line-height: 1.05; }
-    h1 { font-size: clamp(2.75rem, 7vw, 5.5rem); font-weight: 800; }
-    h1 em { color: var(--accent); font-style: italic; }
-    .lede { max-width: 720px; margin: 32px 0 0; font-size: clamp(1.05rem, 2vw, 1.3rem); }
-    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; margin-top: 36px; }
-    .button { display: inline-flex; align-items: center; min-height: 48px; padding: 10px 24px; border-radius: var(--r-pill); background: var(--accent); color: var(--fg-on-pink); font-size: 14px; font-weight: 700; text-decoration: none; box-shadow: var(--shadow-accent); }
-    .button:hover { box-shadow: var(--shadow-pink); }
-    .text-link { color: var(--fg3); font-size: 14px; text-underline-offset: 4px; }
-    .text-link:hover, .text-link:focus-visible { color: var(--fg1); }
+    .source { color: var(--fg3); font-size: var(--fs-label); }
+    .source:hover { color: var(--fg1); }
+    .hero { padding: var(--sp-24) 0 88px; max-width: 900px; }
+    .eyebrow { margin-bottom: var(--sp-5); }
+    .lede { max-width: 640px; margin-top: var(--sp-8); }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-4); margin-top: 36px; }
     section { padding: 88px 0; border-top: 1px solid var(--line); }
-    .section-heading { max-width: 720px; margin-bottom: 40px; }
-    h2 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; }
-    .section-heading p { margin: 20px 0 0; }
-    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .card { padding: 28px; background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--r-md); }
-    .number { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: var(--r-pill); background: var(--support-soft); color: var(--support-fg); font-size: 12px; font-weight: 700; }
-    h3 { margin-top: 40px; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
-    .card p { margin: 16px 0 0; color: var(--fg3); font-size: 14px; }
-    pre { overflow-x: auto; margin: 12px 0 0; padding: 20px; background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--r-md); color: var(--fg2); font-size: 13px; line-height: 1.6; }
-    code { font-family: inherit; }
-    .boundary { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
-    .boundary p { margin: 24px 0 0; }
-    .callout { padding: 28px; background: var(--accent-soft); border: 1px solid var(--accent); border-radius: var(--r-md); color: var(--fg1); font-size: 14px; }
-    .callout p { margin: 16px 0 0; }
-    .callout p:first-child { margin: 0; }
-    footer { display: flex; justify-content: space-between; gap: 24px; padding: 44px 0 56px; border-top: 1px solid var(--line); color: var(--fg3); font-size: 12px; }
+    .section-heading { max-width: 640px; margin-bottom: var(--sp-10); }
+    .section-heading p:not(.eyebrow) { margin-top: var(--sp-5); }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-5); }
+    .nt-card h3 { margin-top: var(--sp-10); }
+    .nt-card p { margin-top: var(--sp-4); color: var(--fg3); font-size: var(--fs-small); }
+    pre { overflow-x: auto; margin: var(--sp-3) 0 0; padding: var(--sp-5); background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--r-md); color: var(--fg2); line-height: 1.6; }
+    pre code { padding: 0; background: none; color: inherit; }
+    .boundary { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-16); align-items: start; }
+    .callout p { color: var(--fg1); font-size: var(--fs-small); }
+    .callout p + p { margin-top: var(--sp-4); }
+    footer { display: flex; justify-content: space-between; gap: var(--sp-6); padding: 44px 0 56px; border-top: 1px solid var(--line); }
+    footer p { color: var(--fg3); font-size: var(--fs-caption); }
     footer strong { color: var(--fg2); }
     @media (max-width: 860px) {
-      nav, main, footer { width: min(100% - 32px, 1120px); }
+      nav, main, footer { width: min(100% - var(--sp-8), 1120px); }
       .hero { padding: 56px 0 72px; }
-      section { padding: 64px 0; }
+      section { padding: var(--sp-16) 0; }
       .grid, .boundary { grid-template-columns: 1fr; }
-      .boundary { gap: 32px; }
+      .boundary { gap: var(--sp-8); }
       footer { flex-direction: column; }
     }
   </style>
@@ -89,11 +71,11 @@ const render = (host: string) => `<!doctype html>
   <main>
     <header class="hero">
       <p class="eyebrow">Hosted Shopify theme proxy</p>
-      <h1>Hand out store access, <em>not the live theme</em>.</h1>
+      <h1 class="display">Hand out store access, <em>not the live theme</em>.</h1>
       <p class="lede">We keep your Theme Access token. Developers and agents get a sealed, expiring copy: pull any theme, change only development themes.</p>
       <div class="actions">
-        <a class="button" href="#setup">Connect a project</a>
-        <a class="text-link" href="#boundary">What it does not protect</a>
+        <a class="nt-btn nt-btn--primary nt-btn--lg" href="#setup">Connect a project</a>
+        <a class="nt-btn nt-btn--ghost nt-btn--lg" href="#boundary">What it does not protect</a>
       </div>
     </header>
     <section aria-labelledby="problem">
@@ -109,18 +91,18 @@ const render = (host: string) => `<!doctype html>
         <h2 id="works">The real token never leaves the proxy.</h2>
       </div>
       <div class="grid">
-        <article class="card">
-          <span class="number">01</span>
+        <article class="nt-card">
+          <span class="nt-badge nt-badge--mint">01</span>
           <h3>Sealed</h3>
           <p>Bound to one store with an expiry. Developers only hold the sealed copy.</p>
         </article>
-        <article class="card">
-          <span class="number">02</span>
+        <article class="nt-card">
+          <span class="nt-badge nt-badge--mint">02</span>
           <h3>Checked</h3>
           <p>Only <code>theme dev</code> and <code>theme pull</code> get through. Reads reach any theme; writes reach development themes only.</p>
         </article>
-        <article class="card">
-          <span class="number">03</span>
+        <article class="nt-card">
+          <span class="nt-badge nt-badge--mint">03</span>
           <h3>Expiring</h3>
           <p>Tokens expire on their own. Rotate the Theme Access token to revoke them all.</p>
         </article>
@@ -138,15 +120,15 @@ SHOPIFY_CLI_THEME_TOKEN=shptka_sealed_...</code></pre>
     </section>
     <section class="boundary" id="boundary" aria-labelledby="boundary-heading">
       <p class="eyebrow" id="boundary-heading">Limits</p>
-      <div class="callout">
+      <div class="callout nt-card nt-card--accent">
         <p><strong>Read-only on live.</strong> Every live-theme write is refused.</p>
         <p>A stolen sealed token can still read every theme and create, edit, or delete development themes until it expires.</p>
       </div>
     </section>
   </main>
   <footer>
-    <strong>Engineering you can see in the numbers.</strong>
-    <span>Open source by NoTambourine · a boutique AI-native engineering agency. In daily use keeping Claude off client live themes at 50 deploys a day (Q3 average).</span>
+    <p><strong>Engineering you can see in the numbers.</strong></p>
+    <p>Open source by NoTambourine · a boutique AI-native engineering agency. In daily use keeping Claude off client live themes at 50 deploys a day (Q3 average). <a href="https://notambourine.com/tom">Start a conversation</a>.</p>
   </footer>
 </body>
 </html>`;
@@ -158,7 +140,7 @@ export function landing(method: string, host: string): Response {
   return new Response(method === 'HEAD' ? null : cached.page, {
     headers: {
       'cache-control': 'public, max-age=300',
-      'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+      'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
       'content-type': 'text/html; charset=utf-8',
       'referrer-policy': 'no-referrer',
       'x-content-type-options': 'nosniff',
