@@ -28,8 +28,8 @@ before uploading the public key. Keep the private key in the admin's SSH agent.
 Local-only sealing can omit `ADMIN_SSH_PUBLIC_KEY`.
 
 Smoke-test theme sync, live reload, password-protected previews, live-theme
-pull, denied live-theme writes, and rate limits before use. Recheck proxy routing and
-token redaction whenever the pinned Shopify CLI changes.
+pull, denied live-theme writes, and rate limits before use. Recheck proxy
+routing and token redaction whenever the pinned Shopify CLI changes.
 
 ## Issue a credential
 
@@ -69,10 +69,10 @@ ownership of a copied credential.
 
 ## Limits and revocation
 
-A sealed credential is bound to one store and an expiry. Until then, it can
-read every theme and create, edit, and delete development themes. Individual revocation is not
-available. Rotate the Theme Access token or server decryption key to invalidate
-all issued credentials. Changing the admin SSH key affects new issuance only.
+A sealed credential is bound to one store and an expiry. Until it expires, it
+can read every theme and create, edit, and delete development themes. You cannot
+revoke one credential at a time. Rotate the Theme Access token or server
+decryption key to invalidate all issued credentials. Changing the admin SSH key affects new issuance only.
 Removing a person's GitHub or 1Password access does not revoke a credential they
 already copied.
 
