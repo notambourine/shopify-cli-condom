@@ -8,9 +8,9 @@ preview and live reload. `pull` downloads any theme, the live one included, into
 your working tree. `publish`, `push`, environments, and arbitrary CLI arguments
 do not get through.
 
-Want the raw Shopify token off development machines too? The NoTambourine proxy
-swaps it for a sealed, expiring token that reads any theme and writes only to
-development themes.
+To keep the raw Shopify token off development machines, use the NoTambourine
+proxy. It swaps the token for a sealed, expiring one that reads any theme and
+writes only to development themes.
 
 ## Start developing
 
@@ -48,7 +48,7 @@ supported options.
   CLI storage.
 - `pull` overwrites changed files in your working tree and deletes local theme
   files missing from the remote theme unless you pass `--nodelete`.
-- Repository environments and cached theme IDs have no say in the command.
+- The command ignores repository environments and cached theme IDs.
 - Shopify flags, plugin paths, `NODE_OPTIONS`, and unrelated credentials stay
   out of the child environment.
 - An exact Shopify CLI version is bundled, and its `shopify` binary is not
@@ -75,8 +75,9 @@ The package does not install agent command guards.
 
 The optional proxy lets a sealed token read any theme and write only to
 development themes. A stolen sealed token can still read every theme and create,
-edit, and delete development themes on its store until it expires. Tokens cannot be revoked one at a time; rotate the Theme
-Access token or the server decryption key to invalidate them all.
+edit, and delete development themes on its store until it expires. You cannot
+revoke one token at a time; rotate the Theme Access token or the server
+decryption key to invalidate them all.
 
 See [proxy operations](https://github.com/notambourine/shopify-cli-condom/blob/main/worker/README.md)
 to host the Worker and issue sealed credentials.
@@ -102,4 +103,4 @@ Shopify references: [theme dev](https://shopify.dev/docs/api/shopify-cli/theme/t
 
 ---
 
-Open source by [NoTambourine](https://notambourine.com) · a boutique AI-native engineering agency.
+Open source by [NoTambourine](https://notambourine.com) · a boutique AI-native engineering agency. [Start a conversation](https://notambourine.com/tom).

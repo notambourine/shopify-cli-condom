@@ -1,4 +1,4 @@
-import { brandFavicon, brandMark, brandVariables, ogImage } from './brand.generated.ts';
+import { brandFavicon, brandLockup, brandMark, brandStyles, ogImage } from './brand.generated.ts';
 
 const render = (host: string) => `<!doctype html>
 <html lang="en">
@@ -21,113 +21,77 @@ const render = (host: string) => `<!doctype html>
   <meta property="og:image:alt" content="Develop Shopify themes against real store data. Live reload without live-theme access.">
   <meta name="twitter:card" content="summary_large_image">
   <style>
-    ${brandVariables}
+    ${brandStyles}
     :root { color-scheme: dark; }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--fg2);
-      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
-      font-size: 16px;
-      line-height: 1.7;
-      letter-spacing: 0.01em;
-    }
-    a { color: inherit; }
-    nav, main, footer { width: min(1120px, calc(100% - 48px)); margin: 0 auto; }
-    nav { height: 80px; display: flex; align-items: center; justify-content: space-between; }
-    .brand { display: flex; align-items: center; gap: 12px; color: var(--fg1); text-decoration: none; font-size: 13px; font-weight: 700; }
-    .brand svg { width: 34px; height: 34px; fill: var(--accent); }
-    .source { color: var(--fg3); font-size: 13px; text-underline-offset: 4px; }
-    .source:hover, .source:focus-visible { color: var(--fg1); }
-    :focus-visible { outline: 3px solid var(--support); outline-offset: 4px; }
-    .hero { padding: 96px 0 88px; max-width: 900px; }
-    .eyebrow { margin: 0 0 20px; color: var(--accent-fg); font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
-    h1, h2, h3 { margin: 0; color: var(--fg1); font-family: system-ui, sans-serif; letter-spacing: -0.03em; line-height: 1.05; }
-    h1 { font-size: clamp(2.75rem, 7vw, 5.5rem); font-weight: 800; }
-    h1 em { color: var(--accent); font-style: italic; }
-    .lede { max-width: 720px; margin: 32px 0 0; font-size: clamp(1.05rem, 2vw, 1.3rem); }
-    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; margin-top: 36px; }
-    .button { display: inline-flex; align-items: center; min-height: 48px; padding: 10px 24px; border-radius: var(--r-pill); background: var(--accent); color: var(--fg-on-pink); font-size: 14px; font-weight: 700; text-decoration: none; box-shadow: var(--shadow-accent); }
-    .button:hover { box-shadow: var(--shadow-pink); }
-    .text-link { color: var(--fg3); font-size: 14px; text-underline-offset: 4px; }
-    .text-link:hover, .text-link:focus-visible { color: var(--fg1); }
-    section { padding: 88px 0; border-top: 1px solid var(--line); }
-    .section-heading { max-width: 720px; margin-bottom: 40px; }
-    h2 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; }
-    .section-heading p { margin: 20px 0 0; }
-    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .card { padding: 28px; background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--r-md); }
-    .number { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: var(--r-pill); background: var(--support-soft); color: var(--support-fg); font-size: 12px; font-weight: 700; }
-    h3 { margin-top: 40px; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
-    .card p { margin: 16px 0 0; color: var(--fg3); font-size: 14px; }
-    pre { overflow-x: auto; margin: 12px 0 0; padding: 20px; background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--r-md); color: var(--fg2); font-size: 13px; line-height: 1.6; }
-    code { font-family: inherit; }
-    .boundary { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
-    .boundary p { margin: 24px 0 0; }
-    .callout { padding: 28px; background: var(--accent-soft); border: 1px solid var(--accent); border-radius: var(--r-md); color: var(--fg1); font-size: 14px; }
-    .callout p { margin: 16px 0 0; }
-    .callout p:first-child { margin: 0; }
-    footer { display: flex; justify-content: space-between; gap: 24px; padding: 44px 0 56px; border-top: 1px solid var(--line); color: var(--fg3); font-size: 12px; }
-    footer strong { color: var(--fg2); }
-    @media (max-width: 860px) {
-      nav, main, footer { width: min(100% - 32px, 1120px); }
-      .hero { padding: 56px 0 72px; }
-      section { padding: 64px 0; }
-      .grid, .boundary { grid-template-columns: 1fr; }
-      .boundary { gap: 32px; }
-      footer { flex-direction: column; }
-    }
+    body { margin: 0; }
+    main { width: min(100%, 1100px); margin-inline: auto; }
+    main > .nt-section:first-child { border-top: 0; }
+    .home { display: inline-flex; align-items: center; gap: var(--sp-3); color: var(--fg1); border: 0; font-family: var(--font-accent); font-size: var(--fs-label); font-weight: var(--fw-bold); }
+    .home svg { width: 32px; height: 32px; fill: var(--accent); }
+    .copy { max-width: 640px; }
+    .nt-card p { color: var(--fg3); font-size: var(--fs-small); }
+    pre { overflow-x: auto; margin: 0; padding: var(--sp-5); background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--r-md); color: var(--fg2); line-height: 1.6; }
+    pre code { padding: 0; background: none; color: inherit; }
+    .callout p { color: var(--fg1); font-size: var(--fs-small); }
+    .nt-footer p { font-size: inherit; color: inherit; }
+    .nt-footer strong { color: var(--fg1); }
   </style>
 </head>
 <body>
-  <nav aria-label="Primary">
-    <a class="brand" href="/">${brandMark}<span>shopify-cli-condom</span></a>
-    <a class="source" href="https://github.com/notambourine/shopify-cli-condom">View source</a>
-  </nav>
-  <main>
-    <header class="hero">
-      <p class="eyebrow">Hosted Shopify theme proxy</p>
-      <h1>Hand out store access, <em>not the live theme</em>.</h1>
-      <p class="lede">We keep your Theme Access token. Developers and agents get a sealed, expiring copy: pull any theme, change only development themes.</p>
-      <div class="actions">
-        <a class="button" href="#setup">Connect a project</a>
-        <a class="text-link" href="#boundary">What it does not protect</a>
+  <a class="nt-skip" href="#main">Skip to content</a>
+  <header class="nt-header">
+    <a class="home" href="/">${brandMark}<span>shopify-cli-condom</span></a>
+    <nav class="nt-header__links" aria-label="Primary">
+      <a href="https://github.com/notambourine/shopify-cli-condom">View source</a>
+    </nav>
+    <a class="nt-header__cta" href="https://notambourine.com/tom">Start a conversation</a>
+  </header>
+  <main id="main">
+    <section class="nt-section nt-stack" style="--gap: var(--sp-8)">
+      <div class="nt-stack" style="--gap: var(--sp-5)">
+        <p class="eyebrow">Hosted Shopify theme proxy</p>
+        <h1 class="display">Hand out store access, <em>not the live theme</em>.</h1>
       </div>
-    </header>
-    <section aria-labelledby="problem">
-      <div class="section-heading">
+      <p class="lede copy">We keep your Theme Access token. Developers and agents get a sealed, expiring copy: pull any theme, change only development themes.</p>
+      <div class="nt-cluster" style="--gap: var(--sp-4)">
+        <a class="nt-btn nt-btn--primary nt-btn--lg" href="#setup">Connect a project</a>
+        <a class="nt-btn nt-btn--ghost nt-btn--lg" href="#boundary">What it does not protect</a>
+      </div>
+    </section>
+    <section class="nt-section" aria-labelledby="problem">
+      <div class="nt-stack copy" style="--gap: var(--sp-5)">
         <p class="eyebrow">Why it exists</p>
         <h2 id="problem">Shopify theme tokens do not stop at development.</h2>
         <p>A token that runs <code>theme dev</code> can also publish over the live storefront. Shopify has no development-only scope.</p>
       </div>
     </section>
-    <section aria-labelledby="works">
-      <div class="section-heading">
+    <section class="nt-section nt-stack" style="--gap: var(--sp-10)" aria-labelledby="works">
+      <div class="nt-stack copy" style="--gap: var(--sp-5)">
         <p class="eyebrow">How it works</p>
         <h2 id="works">The real token never leaves the proxy.</h2>
       </div>
-      <div class="grid">
-        <article class="card">
-          <span class="number">01</span>
+      <div class="nt-grid">
+        <article class="nt-card nt-stack" style="--gap: var(--sp-3); align-items: start">
+          <span class="nt-badge nt-badge--mint">01</span>
           <h3>Sealed</h3>
           <p>Bound to one store with an expiry. Developers only hold the sealed copy.</p>
         </article>
-        <article class="card">
-          <span class="number">02</span>
+        <article class="nt-card nt-stack" style="--gap: var(--sp-3); align-items: start">
+          <span class="nt-badge nt-badge--mint">02</span>
           <h3>Checked</h3>
           <p>Only <code>theme dev</code> and <code>theme pull</code> get through. Reads reach any theme; writes reach development themes only.</p>
         </article>
-        <article class="card">
-          <span class="number">03</span>
+        <article class="nt-card nt-stack" style="--gap: var(--sp-3); align-items: start">
+          <span class="nt-badge nt-badge--mint">03</span>
           <h3>Expiring</h3>
           <p>Tokens expire on their own. Rotate the Theme Access token to revoke them all.</p>
         </article>
       </div>
     </section>
-    <section id="setup" aria-labelledby="setup-heading">
-      <div class="section-heading">
+    <section class="nt-section" id="setup" aria-labelledby="setup-heading">
+      <div class="nt-stack copy" style="--gap: var(--sp-5)">
         <p class="eyebrow">Setup</p>
         <h2 id="setup-heading">Point shopify-cli-condom at this proxy.</h2>
         <p>Load the sealed token from a secret manager.</p>
@@ -136,17 +100,35 @@ SHOPIFY_CLI_THEME_TOKEN=shptka_sealed_...</code></pre>
         <p>Install the wrapper from the <a href="https://github.com/notambourine/shopify-cli-condom">README</a>.</p>
       </div>
     </section>
-    <section class="boundary" id="boundary" aria-labelledby="boundary-heading">
-      <p class="eyebrow" id="boundary-heading">Limits</p>
-      <div class="callout">
-        <p><strong>Read-only on live.</strong> Every live-theme write is refused.</p>
-        <p>A stolen sealed token can still read every theme and create, edit, or delete development themes until it expires.</p>
+    <section class="nt-section" id="boundary" aria-labelledby="boundary-heading">
+      <div class="nt-stack copy" style="--gap: var(--sp-5)">
+        <p class="eyebrow" id="boundary-heading">Limits</p>
+        <div class="callout nt-card nt-card--accent nt-stack" style="--gap: var(--sp-4)">
+          <p><strong>Read-only on live.</strong> Every live-theme write is refused.</p>
+          <p>A stolen sealed token can still read every theme and create, edit, or delete development themes until it expires.</p>
+        </div>
       </div>
     </section>
   </main>
-  <footer>
-    <strong>Engineering you can see in the numbers.</strong>
-    <span>Open source by NoTambourine · a boutique AI-native engineering agency. In daily use keeping Claude off client live themes at 50 deploys a day (Q3 average).</span>
+  <footer class="nt-footer">
+    <a href="https://notambourine.com" class="nt-brand" aria-label="NoTambourine home"><img src="${brandLockup}" alt=""></a>
+    <p><strong>Engineering you can see in the numbers.</strong> We run it daily to keep Claude off client live themes, averaging 50 deploys a day in Q3.</p>
+    <nav class="nt-footer__groups" aria-label="Site">
+      <div>
+        <p class="nt-footer__label">shopify-cli-condom</p>
+        <ul>
+          <li><a href="https://github.com/notambourine/shopify-cli-condom">Source</a></li>
+          <li><a href="https://github.com/notambourine/shopify-cli-condom/blob/main/worker/README.md">Proxy operations</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="nt-footer__label">NoTambourine</p>
+        <ul>
+          <li><a href="https://notambourine.com/tom">Start a conversation</a></li>
+        </ul>
+      </div>
+    </nav>
+    <p class="nt-footer__legal">Open source by NoTambourine · a boutique AI-native engineering agency.</p>
   </footer>
 </body>
 </html>`;
@@ -158,7 +140,7 @@ export function landing(method: string, host: string): Response {
   return new Response(method === 'HEAD' ? null : cached.page, {
     headers: {
       'cache-control': 'public, max-age=300',
-      'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+      'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
       'content-type': 'text/html; charset=utf-8',
       'referrer-policy': 'no-referrer',
       'x-content-type-options': 'nosniff',
