@@ -5,7 +5,7 @@ updates:
       - /
       - /worker
     schedule:
-      interval: weekly
+      interval: daily
     cooldown:
       default-days: 2
       semver-major-days: 5
@@ -24,7 +24,7 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: daily
     cooldown:
       default-days: 2
     groups:
