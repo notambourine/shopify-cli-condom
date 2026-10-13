@@ -152,8 +152,8 @@ test('serves a public landing page without touching Shopify', async () => {
   assert.match(response.headers.get('content-type') ?? '', /^text\/html/);
   assert.match(response.headers.get('content-security-policy') ?? '', /frame-ancestors 'none'/);
   const body = await response.text();
-  assert.match(body, /Hand out store access/);
-  assert.match(body, /Shopify theme tokens do not stop at development/);
+  assert.match(body, /Change only <em>development<\/em> themes/);
+  assert.match(body, /Shopify has no <em>development-only<\/em> token/);
   assert.match(body, /stolen sealed token can still read every theme/);
   assert.match(body, /github\.com\/notambourine\/shopify-cli-condom/);
   assert.match(body, /SHOPIFY_CLI_CONDOM_PROXY=proxy\.example/);

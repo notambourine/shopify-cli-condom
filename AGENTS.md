@@ -1,21 +1,42 @@
 # shopify-cli-condom
 
-Development-only Shopify CLI wrapper. `src/` owns command isolation. `worker/src/` owns credential sealing, proxy policy, and the landing page. Tests live beside each package.
+A development-only Shopify CLI wrapper plus an optional proxy.
 
-- Never let the wrapper or proxy modify, publish, or replace a live theme. Reading any theme is allowed.
-- Bundle and pin `@shopify/cli` exactly. Consumer `node_modules/.bin` must contain `shopify-cli-condom` but not `shopify`.
-- Install with `--ignore-scripts`. Dependency install scripts otherwise rewrite the bundled tree into an unpackable tarball.
-- Publish compiled `dist/`; Node does not strip types under `node_modules`.
-- Pack every supported platform's native binaries. npm resolves them per host, and a consumer cannot backfill a bundled tree.
-- Verify Shopify CLI behavior against the pinned distribution before relying on it.
-- Accept only explicit options. Add a flag only after proving it cannot write to a live theme, publish, push, select an environment, or pass arbitrary CLI input.
-- Build Shopify CLI arguments from parsed values. Do not forward caller arguments.
+```
+Command isolation         src/
+Sealing, proxy, landing   worker/src/
+Tests                     beside each package
+```
+
+## Safety
+
+- Never let the wrapper or proxy modify, publish, or replace a live theme. Reading any theme is fine.
+- Add a flag only after proving it cannot write to a live theme, publish, push, select an environment, or pass arbitrary CLI input.
+- Build Shopify CLI arguments from parsed values. Never forward caller arguments.
 - Allowlist the child environment. Exclude `SHOPIFY_FLAG_*`, `NODE_OPTIONS`, plugin paths, and unrelated credentials.
-- Isolate repository config with a temporary root and empty `shopify.theme.toml`. Link only recognized theme paths. Cleanup must not modify or remove source theme files.
-- Keep the proxy deny-by-default. Allow only pinned CLI operations. Queries may read any theme; verify every mutation and preview targets a development theme before forwarding it.
-- Bind sealed credentials to one store and an expiry. Treat labels as metadata, not authorization. Do not claim individual revocation.
-- Do not widen proxy routes, methods, headers, cookies, GraphQL fields, or preview handling without proving the pinned CLI needs it and adding denial tests.
-- Keep wrapper and proxy boundaries distinct in public copy. The wrapper constrains a command; only the proxy constrains use of a sealed credential.
-- Back README safety claims with tests. State credential and bypass limits directly.
-- Verify public install instructions against the published npm version.
-- Run `npm test` in the root and `worker/` before pushing. CI repeats them with supply-chain scans.
+- Run commands from a temporary root with an empty `shopify.theme.toml`, linking only recognized theme paths. Cleanup must never modify or remove source theme files.
+
+## Proxy
+
+- Deny by default and allow only pinned CLI operations. Queries may read any theme. Confirm every mutation and preview targets a development theme before forwarding.
+- Widen routes, methods, headers, cookies, GraphQL fields, or preview handling only after proving the pinned CLI needs it, and add denial tests with the change.
+- Bind sealed credentials to one store and an expiry. Labels are metadata, never authorization. Never claim individual revocation.
+
+## Packaging
+
+- Bundle `@shopify/cli` at an exact version. Consumer `node_modules/.bin` must contain `shopify-cli-condom` and must not contain `shopify`.
+- Install with `--ignore-scripts`; dependency install scripts rewrite the bundled tree into an unpackable tarball.
+- Publish compiled `dist/`. Node does not strip types under `node_modules`.
+- Pack native binaries for every supported platform. npm resolves them per host, and consumers cannot backfill a bundled tree.
+- Verify Shopify CLI behavior against the pinned distribution before relying on it.
+
+## Public copy
+
+- Keep the wrapper and proxy boundaries distinct: the wrapper constrains a command, and only the proxy constrains use of a sealed credential.
+- Back every README safety claim with a test. State credential and bypass limits plainly.
+- Verify install instructions against the published npm version.
+- Write in the voice and tokens of the pinned `@notambourine/brand-kit`.
+
+## Checks
+
+Run `npm test` in the root and in `worker/` before pushing. CI repeats both with supply-chain scans.

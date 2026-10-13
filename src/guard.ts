@@ -40,15 +40,18 @@ const errorCode = (error: unknown): string | undefined =>
 export const help = `Usage: shopify-cli-condom dev --store STORE [options]
        shopify-cli-condom pull --store STORE (--live | --theme ID) [options]
 
-Uses SHOPIFY_CLI_THEME_TOKEN for authentication.
-Set SHOPIFY_CLI_CONDOM_PROXY to a proxy hostname to use a sealed token instead.
+dev   Preview a fresh development theme with live reload.
+pull  Download any theme into local files.
+
 dev options:  --path DIR, --port PORT, --open, --nodelete,
               --live-reload hot-reload|full-page|off, --help
 pull options: --path DIR, --nodelete, --help
 
-dev works on a fresh development theme. pull reads any theme and writes only
-local files. No arbitrary CLI passthrough.
-This prevents accidents through this command; only the proxy restricts your token.`;
+Reads the token from SHOPIFY_CLI_THEME_TOKEN. To use a sealed token, set
+SHOPIFY_CLI_CONDOM_PROXY to the proxy hostname.
+
+Other Shopify CLI arguments are rejected. This command guards against
+accidents; only the proxy limits what a token can do.`;
 
 export const sealedPrefix = 'shptka_sealed_';
 
