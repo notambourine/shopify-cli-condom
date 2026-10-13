@@ -7,7 +7,7 @@ updates:
     schedule:
       interval: daily
     cooldown:
-      default-days: 2
+      default-days: 1
       semver-major-days: 5
     groups:
       security:
