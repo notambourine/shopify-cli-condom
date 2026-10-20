@@ -6,7 +6,7 @@ const stripComments = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, '');
 const svgUri = (svg: string) => `data:image/svg+xml;base64,${Buffer.from(svg.replace(/<!--[\s\S]*?-->/g, '')).toString('base64')}`;
 
 // The landing CSP has no font origin, so faces ship as data URIs. The page uses no live wordmark text or mono italic.
-const faces = new Set(['hanken-grotesk-latin-var.woff2', 'hanken-grotesk-latin-var-italic.woff2', 'jetbrains-mono-latin-var.woff2']);
+const faces = new Set(['hanken-grotesk-latin-var.woff2', 'hanken-grotesk-latin-var-italic.woff2', 'jetbrains-mono-latin-var.woff2', 'space-mono-latin-400.woff2', 'space-mono-latin-700.woff2']);
 const fontFaces = [];
 for (const rule of stripComments(await read('fonts.css')).match(/@font-face\s*\{[^}]*\}/g) ?? []) {
   const file = /url\('\.\/fonts\/([^']+)'\)/.exec(rule)?.[1];

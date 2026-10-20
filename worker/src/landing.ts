@@ -47,7 +47,7 @@ const render = (host: string) => `<!doctype html>
       <a href="#limits">Limits</a>
       <a href="https://github.com/notambourine/shopify-cli-condom">Source</a>
     </nav>
-    <a class="nt-header__cta" href="https://notambourine.com/tom">Start a conversation</a>
+    <a class="nt-header__cta nt-btn nt-btn--secondary nt-btn--sm" href="https://notambourine.com/tom">Start a conversation</a>
   </header>
   <main id="main">
     <section class="nt-section nt-stack" style="--gap: var(--sp-8)">
