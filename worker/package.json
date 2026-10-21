@@ -4,7 +4,7 @@
   "description": "Cloudflare Worker that unseals theme tokens and forwards only development-theme operations to Shopify.",
   "type": "module",
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=24.1.0"
   },
   "scripts": {
     "brand": "node scripts/build-brand.ts",
