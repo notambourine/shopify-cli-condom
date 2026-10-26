@@ -1,7 +1,7 @@
 {
   "name": "@notambourine/shopify-cli-condom",
   "version": "0.0.3",
-  "description": "Development-only Shopify CLI wrapper for working on real stores.",
+  "description": "Develop Shopify themes against real store data. Never change the live theme.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/notambourine/shopify-cli-condom.git"

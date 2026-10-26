@@ -5,7 +5,7 @@ const render = (host: string) => `<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Give developers and AI agents a sealed Shopify theme token that reads any theme and writes only to development themes.">
+  <meta name="description" content="Give developers and AI agents real store data without the keys to the live theme.">
   <title>shopify-cli-condom proxy · sealed Shopify theme tokens</title>
   <link rel="icon" type="image/svg+xml" href="${brandFavicon}">
   <link rel="canonical" href="https://${host}/">
@@ -13,12 +13,12 @@ const render = (host: string) => `<!doctype html>
   <meta property="og:site_name" content="NoTambourine">
   <meta property="og:url" content="https://${host}/">
   <meta property="og:title" content="shopify-cli-condom proxy · sealed Shopify theme tokens">
-  <meta property="og:description" content="Give developers and AI agents a sealed Shopify theme token that reads any theme and writes only to development themes.">
+  <meta property="og:description" content="Give developers and AI agents real store data without the keys to the live theme.">
   <meta property="og:image" content="https://${host}/og.png">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Develop Shopify themes against real store data. Live reload without live-theme access.">
+  <meta property="og:image:alt" content="Develop Shopify themes against real store data. Never change the live theme.">
   <meta name="twitter:card" content="summary_large_image">
   <style>
     ${brandStyles}
@@ -35,7 +35,6 @@ const render = (host: string) => `<!doctype html>
     pre { overflow-x: auto; margin: 0; padding: var(--sp-5); background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--r-md); color: var(--fg2); line-height: 1.6; }
     pre code { padding: 0; background: none; color: inherit; }
     .nt-footer p { font-size: inherit; color: inherit; }
-    .nt-footer strong { color: var(--fg1); }
   </style>
 </head>
 <body>
@@ -53,7 +52,7 @@ const render = (host: string) => `<!doctype html>
     <section class="nt-section nt-stack" style="--gap: var(--sp-8)">
       <div class="nt-stack" style="--gap: var(--sp-5)">
         <p class="eyebrow">Shopify theme proxy</p>
-        <h1 class="display">Pull the live theme. Change only <em>development</em> themes.</h1>
+        <h1 class="display">Develop against real store data. Never change the <em>live theme</em>.</h1>
       </div>
       <p class="lede nt-measure">The proxy holds your Theme Access token. Developers and AI agents get a sealed copy that expires.</p>
       <div class="nt-cluster" style="--gap: var(--sp-4)">
@@ -104,7 +103,7 @@ const render = (host: string) => `<!doctype html>
         </article>
         <article class="nt-card nt-stack" style="--gap: var(--sp-3)">
           <h3>Expiring</h3>
-          <p>Each sealed token expires on a date set when it is issued.</p>
+          <p>Sealed tokens expire on their own.</p>
         </article>
       </div>
     </section>
@@ -134,7 +133,6 @@ SHOPIFY_CLI_THEME_TOKEN=shptka_sealed_...</code></pre>
   </main>
   <footer class="nt-footer">
     <a href="https://notambourine.com" class="nt-brand" aria-label="NoTambourine home"><img src="${brandLockup}" alt=""></a>
-    <p><strong>Engineering measured in results, not hours.</strong> We run this proxy on client stores every day.</p>
     <nav class="nt-footer__groups" aria-label="Site">
       <div>
         <p class="nt-footer__label">shopify-cli-condom</p>
@@ -150,7 +148,7 @@ SHOPIFY_CLI_THEME_TOKEN=shptka_sealed_...</code></pre>
         </ul>
       </div>
     </nav>
-    <p class="nt-footer__legal">Open source by NoTambourine · a boutique AI-native engineering agency.</p>
+    <p class="nt-footer__legal">Made with 💙 by <a href="https://notambourine.com">NoTambourine</a>.</p>
   </footer>
 </body>
 </html>`;
