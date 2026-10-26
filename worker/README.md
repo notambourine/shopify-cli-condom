@@ -1,7 +1,7 @@
 # Proxy operations
 
-The proxy lets developers preview Shopify themes without holding the raw Theme
-Access token.
+The proxy lets developers run `theme dev` and `theme pull` without holding the
+Theme Access token.
 
 It is a Cloudflare Worker with no database. It accepts sealed tokens that
 expire and forwards only the Shopify operations that `theme dev` and
@@ -14,7 +14,7 @@ Set the route domain and `CANONICAL_HOST` together in `worker/*.toml`. Before
 the Worker is public, add blocking rate limits on `POST /seal` and `/cli/*`,
 with enough headroom for theme sync and live reload.
 
-Deploy with separate keys for server encryption and admin signing:
+Deploy with separate keys for the server and for admin signing:
 
 ```sh
 npm ci --ignore-scripts
@@ -72,8 +72,8 @@ copied token or whether they still work for you.
 A sealed token is bound to one store and an expiry. Until it expires, it can
 read every theme and create, edit, and delete development themes.
 
-You cannot revoke a single token. Rotating the Theme Access token or the server
-decryption key invalidates every issued token. Changing the admin SSH key
+You cannot revoke a single token. Rotating the Theme Access token or the server's
+private key invalidates every issued token. Changing the admin SSH key
 affects only new issuance. Removing someone's GitHub or 1Password access leaves
 any token they already copied working.
 
