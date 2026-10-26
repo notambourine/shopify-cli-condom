@@ -1,14 +1,14 @@
 # shopify-cli-condom
 
-Developers and coding agents can work on a Shopify theme against real store
-data. The live theme stays out of their reach.
+Work on a Shopify theme against real store data without handing developers or
+coding agents a command that can change the live theme.
 
 The wrapper runs two Shopify CLI commands. `dev` creates a fresh development
 theme with local preview and live reload. `pull` downloads any theme, including
 the live one, into your working tree. It rejects `publish`, `push`,
 environments, and any other CLI arguments.
 
-The optional NoTambourine proxy keeps the raw Shopify token off development
+The optional NoTambourine proxy keeps the Theme Access token off development
 machines. Developers get a sealed token that expires. It can read any theme and
 write only to development themes.
 
@@ -41,7 +41,7 @@ Load `SHOPIFY_CLI_THEME_TOKEN` from a secret manager and run `npm run dev`.
 
 The wrapper parses your options and builds the Shopify CLI arguments itself.
 Each `dev` run gets a new development theme, and every run gets its own Shopify
-CLI storage. Repository environments and cached theme IDs are ignored.
+CLI storage. It ignores repository environments and cached theme IDs.
 
 The child process starts from an allowlisted environment. Shopify flags, plugin
 paths, `NODE_OPTIONS`, and unrelated credentials stay out. The package bundles
@@ -54,27 +54,28 @@ theme files that the remote theme lacks, unless you pass `--nodelete`.
 
 Edits from `dev` land in your working tree. If you add a top-level theme
 directory while the command runs, restart it. The theme's `.shopifyignore`
-applies; ignore lists in TOML environments do not. Proxy environment variables
-are not supported.
+applies; ignore lists in TOML environments do not. HTTP proxy variables such
+as `HTTPS_PROXY` do not reach Shopify CLI.
 
 The wrapper removes its temporary directory on normal exit and on handled
 signals. `SIGKILL` can leave it behind. Cleanup never touches your theme files.
 
 ## Limits
 
-The wrapper constrains this command. It does not constrain a raw Theme Access
-token, which can still change the live theme through another Shopify CLI, a
+The wrapper constrains only its own commands. It does not constrain a raw Theme
+Access token, which can still change the live theme through another Shopify CLI, a
 direct API call, or any HTTP client. Where you can, keep production tokens in
 CI-only secrets, give development machines staging-store tokens, and keep
 deployment approvals in place.
 
-The package installs no agent command guards.
+Nothing in the package stops an agent from running another Shopify CLI. Add
+your own agent command guards.
 
 The proxy constrains a sealed token: it reads any theme and writes only to
 development themes. A stolen sealed token can still read every theme and
 create, edit, and delete development themes on its store until it expires. You
-cannot revoke a single token. Rotating the Theme Access token or the server
-decryption key invalidates all of them.
+cannot revoke a single token. Rotating the Theme Access token or the server's
+private key invalidates all of them.
 
 To host the proxy and issue sealed tokens, see
 [proxy operations](https://github.com/notambourine/shopify-cli-condom/blob/main/worker/README.md).

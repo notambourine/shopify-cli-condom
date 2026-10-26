@@ -55,7 +55,7 @@ const render = (host: string) => `<!doctype html>
         <p class="eyebrow">Shopify theme proxy</p>
         <h1 class="display">Pull the live theme. Change only <em>development</em> themes.</h1>
       </div>
-      <p class="lede nt-measure">The proxy holds your Theme Access token. Developers and AI agents get a sealed copy that expires. It reads any theme and writes only to development themes.</p>
+      <p class="lede nt-measure">The proxy holds your Theme Access token. Developers and AI agents get a sealed copy that expires.</p>
       <div class="nt-cluster" style="--gap: var(--sp-4)">
         <a class="nt-btn nt-btn--primary nt-btn--lg" href="#setup">Connect a project</a>
         <a class="nt-btn nt-btn--ghost nt-btn--lg" href="#limits">Read the limits</a>
@@ -66,14 +66,14 @@ const render = (host: string) => `<!doctype html>
       <div class="nt-stack nt-measure" style="--gap: var(--sp-5)">
         <p class="eyebrow">Why it exists</p>
         <h2 id="problem">Shopify has no <em>development-only</em> token.</h2>
-        <p>A token that can run <code>theme dev</code> can also publish over your live storefront. The proxy keeps that token and checks every request made with the sealed copy.</p>
+        <p>A token that can run <code>theme dev</code> can also overwrite or publish your live theme. The proxy keeps that token and checks every request made with the sealed copy.</p>
       </div>
       <div class="nt-grid" style="--gap: var(--sp-5)">
         <div class="nt-card nt-card--support nt-stack" style="--gap: var(--sp-4); align-items: start">
           <span class="nt-badge nt-badge--mint"><span class="nt-badge__dot"></span>Forwarded</span>
           <ul>
             <li><code>theme dev</code> and <code>theme pull</code></li>
-            <li>Reads of any theme, including live</li>
+            <li>Reads of any theme, including the live one</li>
             <li>Writes to development themes</li>
           </ul>
         </div>
@@ -91,7 +91,7 @@ const render = (host: string) => `<!doctype html>
     <section class="nt-section nt-stack" style="--gap: var(--sp-8)" aria-labelledby="works">
       <div class="nt-stack nt-measure" style="--gap: var(--sp-5)">
         <p class="eyebrow">How it works</p>
-        <h2 id="works">The real token stays on the <em>proxy</em>.</h2>
+        <h2 id="works">The Theme Access token stays on the <em>proxy</em>.</h2>
       </div>
       <div class="nt-grid">
         <article class="nt-card nt-stack" style="--gap: var(--sp-3)">
@@ -104,7 +104,7 @@ const render = (host: string) => `<!doctype html>
         </article>
         <article class="nt-card nt-stack" style="--gap: var(--sp-3)">
           <h3>Expiring</h3>
-          <p>Sealed tokens expire on their own. Rotate the Theme Access token to invalidate all of them at once.</p>
+          <p>Each sealed token expires on a date set when it is issued.</p>
         </article>
       </div>
     </section>
@@ -127,13 +127,14 @@ SHOPIFY_CLI_THEME_TOKEN=shptka_sealed_...</code></pre>
         <div class="nt-card nt-card--accent nt-stack" style="--gap: var(--sp-3)">
           <p>A stolen sealed token can still read every theme and create, edit, or delete development themes on its store until it expires. It cannot write to the live theme.</p>
           <p>You cannot revoke a single token. Rotate the Theme Access token to invalidate every sealed copy.</p>
+          <p>Whoever runs this proxy can decrypt every token sent to it. If you cannot extend that trust, <a href="https://github.com/notambourine/shopify-cli-condom/blob/main/worker/README.md">host your own</a>.</p>
         </div>
       </div>
     </section>
   </main>
   <footer class="nt-footer">
     <a href="https://notambourine.com" class="nt-brand" aria-label="NoTambourine home"><img src="${brandLockup}" alt=""></a>
-    <p><strong>Engineering measured in results, not hours.</strong> We use this proxy every day to keep Claude off client live themes, averaging 50 deploys a day in Q3.</p>
+    <p><strong>Engineering measured in results, not hours.</strong> We run this proxy on client stores every day.</p>
     <nav class="nt-footer__groups" aria-label="Site">
       <div>
         <p class="nt-footer__label">shopify-cli-condom</p>
