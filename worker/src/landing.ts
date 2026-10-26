@@ -5,7 +5,7 @@ const render = (host: string) => `<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Give developers and AI agents real store data without the keys to the live theme.">
+  <meta name="description" content="Live reload against real store data, with your live theme protected.">
   <title>shopify-cli-condom proxy · sealed Shopify theme tokens</title>
   <link rel="icon" type="image/svg+xml" href="${brandFavicon}">
   <link rel="canonical" href="https://${host}/">
@@ -13,12 +13,12 @@ const render = (host: string) => `<!doctype html>
   <meta property="og:site_name" content="NoTambourine">
   <meta property="og:url" content="https://${host}/">
   <meta property="og:title" content="shopify-cli-condom proxy · sealed Shopify theme tokens">
-  <meta property="og:description" content="Give developers and AI agents real store data without the keys to the live theme.">
+  <meta property="og:description" content="Live reload against real store data, with your live theme protected.">
   <meta property="og:image" content="https://${host}/og.png">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Develop Shopify themes against real store data. Never change the live theme.">
+  <meta property="og:image:alt" content="Practice safe theme development. Live reload against real store data, with your live theme protected.">
   <meta name="twitter:card" content="summary_large_image">
   <style>
     ${brandStyles}
@@ -52,9 +52,9 @@ const render = (host: string) => `<!doctype html>
     <section class="nt-section nt-stack" style="--gap: var(--sp-8)">
       <div class="nt-stack" style="--gap: var(--sp-5)">
         <p class="eyebrow">Shopify theme proxy</p>
-        <h1 class="display">Develop against real store data. Never change the <em>live theme</em>.</h1>
+        <h1 class="display">Practice <em>safe</em> theme development.</h1>
       </div>
-      <p class="lede nt-measure">The proxy holds your Theme Access token. Developers and AI agents get a sealed copy that expires.</p>
+      <p class="lede nt-measure">Live reload against real store data, with your live theme protected. The proxy holds your Theme Access token, and developers and AI agents get a sealed copy that expires.</p>
       <div class="nt-cluster" style="--gap: var(--sp-4)">
         <a class="nt-btn nt-btn--primary nt-btn--lg" href="#setup">Connect a project</a>
         <a class="nt-btn nt-btn--ghost nt-btn--lg" href="#limits">Read the limits</a>

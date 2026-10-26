@@ -1,7 +1,7 @@
 # shopify-cli-condom
 
-Give developers and coding agents real store data without the keys to the live
-theme.
+Practice safe theme development. Live reload against real store data, with your
+live theme protected.
 
 The wrapper runs two Shopify CLI commands. `dev` creates a fresh development
 theme with local preview and live reload. `pull` downloads any theme, including
