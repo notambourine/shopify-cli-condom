@@ -1,7 +1,7 @@
 {
   "name": "shopify-cli-condom-proxy",
   "private": true,
-  "description": "Cloudflare Worker that unseals theme tokens and forwards only development-theme operations to Shopify.",
+  "description": "Cloudflare Worker that lets sealed tokens read any theme and write only to development themes.",
   "type": "module",
   "engines": {
     "node": ">=24.1.0"

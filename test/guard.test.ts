@@ -57,6 +57,8 @@ test('does not inherit targeting, node injection, or other Shopify configuration
     HOME: '/home/test', SHOPIFY_CLI_THEME_TOKEN: 'test-token',
     SHOPIFY_FLAG_ALLOW_LIVE: '1', SHOPIFY_FLAG_THEME_ID: '123', SHOPIFY_FLAG_ENVIRONMENT: 'production',
     SHOPIFY_FLAG_STORE: 'production', SHOPIFY_CLI_PLUGINS: '/plugin', NODE_OPTIONS: '--import=/injection.js',
+    HTTPS_PROXY: 'http://proxy.example', HTTP_PROXY: 'http://proxy.example', https_proxy: 'http://proxy.example',
+    ALL_PROXY: 'socks5://proxy.example', NO_PROXY: '*',
   });
   assert.deepEqual(env, { ...state, SHOPIFY_CLI_THEME_TOKEN: 'test-token' });
   assert.throws(() => childEnvironment({}), /SHOPIFY_CLI_THEME_TOKEN/);

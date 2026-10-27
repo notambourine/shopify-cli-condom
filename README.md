@@ -1,7 +1,7 @@
 # shopify-cli-condom
 
-Work on a Shopify theme against real store data without handing developers or
-coding agents a command that can change the live theme.
+Practice safe theme development. Live reload against real store data, with your
+live theme protected.
 
 The wrapper runs two Shopify CLI commands. `dev` creates a fresh development
 theme with local preview and live reload. `pull` downloads any theme, including
@@ -102,5 +102,4 @@ Shopify docs: [theme dev](https://shopify.dev/docs/api/shopify-cli/theme/theme-d
 
 ---
 
-Open source by [NoTambourine](https://notambourine.com) · a boutique AI-native
-engineering agency. [Start a conversation](https://notambourine.com/tom).
+Made with 💙 by [NoTambourine](https://notambourine.com).
