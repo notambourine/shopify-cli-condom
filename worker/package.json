@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@notambourine/brand-kit": "3.5.1",
-    "@types/node": "^26.6.5",
+    "@types/node": "^26.6.6",
     "lockfile-lint": "^5.1.0",
     "typescript": "^7.0.2"
   }
