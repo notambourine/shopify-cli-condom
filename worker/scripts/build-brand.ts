@@ -6,7 +6,7 @@ const stripComments = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, '');
 const svgUri = (svg: string) => `data:image/svg+xml;base64,${Buffer.from(svg.replace(/<!--[\s\S]*?-->/g, '')).toString('base64')}`;
 
 // The landing CSP has no font origin, so faces ship as data URIs. The page uses no live wordmark text or mono italic.
-const faces = new Set(['hanken-grotesk-latin-var.woff2', 'hanken-grotesk-latin-var-italic.woff2', 'jetbrains-mono-latin-var.woff2', 'space-mono-latin-400.woff2', 'space-mono-latin-700.woff2']);
+const faces = new Set(['hanken-grotesk-latin-var.woff2', 'hanken-grotesk-latin-var-italic.woff2', 'jetbrains-mono-latin-var.woff2']);
 const fontFaces = [];
 for (const rule of stripComments(await read('fonts.css')).match(/@font-face\s*\{[^}]*\}/g) ?? []) {
   const file = /url\('\.\/fonts\/([^']+)'\)/.exec(rule)?.[1];
@@ -17,11 +17,9 @@ for (const rule of stripComments(await read('fonts.css')).match(/@font-face\s*\{
 if (fontFaces.length !== faces.size) throw new Error('brand-kit fonts.css no longer declares every landing face.');
 
 const styles = [fontFaces.join('\n'), ...(await Promise.all(['vars.css', 'elements.css', 'components.css'].map(read))).map(stripComments)].join('\n');
-const mark = (await read('logo/mark.svg')).replace('<svg ', '<svg aria-hidden="true" focusable="false" ');
 const ogImage = (await readFile(new URL('../assets/og.png', import.meta.url))).toString('base64');
 const output = [
   `export const brandStyles = ${JSON.stringify(styles)};`,
-  `export const brandMark = ${JSON.stringify(mark)};`,
   `export const brandLockup = ${JSON.stringify(svgUri(await read('logo/lockup.svg')))};`,
   `export const brandFavicon = ${JSON.stringify(svgUri(await read('logo/favicon.svg')))};`,
   `export const ogImage = ${JSON.stringify(ogImage)};`,

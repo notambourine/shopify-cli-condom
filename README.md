@@ -1,16 +1,19 @@
 # shopify-cli-condom
 
-Practice safe theme development. Live reload against real store data, with your
-live theme protected.
+Practice safe theme development. Run Shopify CLI against real store data
+through a wrapper that never writes to your live theme.
 
-The wrapper runs two Shopify CLI commands. `dev` creates a fresh development
-theme with local preview and live reload. `pull` downloads any theme, including
-the live one, into your working tree. It rejects `publish`, `push`,
-environments, and any other CLI arguments.
+The wrapper runs two commands and rejects every other CLI argument, including
+`push`, `publish`, and environments:
 
-The optional NoTambourine proxy keeps the Theme Access token off development
-machines. Developers get a sealed token that expires. It can read any theme and
-write only to development themes.
+- `dev` creates a new development theme and serves a local preview with live
+  reload.
+- `pull` downloads any theme, including the live one, into your working tree.
+
+The wrapper constrains a command, not a token. The optional proxy constrains
+the token: it holds the Theme Access token, and developers and AI agents get a
+sealed copy that expires, reads any theme, and writes only to development
+themes.
 
 ## Install
 
@@ -62,11 +65,11 @@ signals. `SIGKILL` can leave it behind. Cleanup never touches your theme files.
 
 ## Limits
 
-The wrapper constrains only its own commands. It does not constrain a raw Theme
-Access token, which can still change the live theme through another Shopify CLI, a
-direct API call, or any HTTP client. Where you can, keep production tokens in
-CI-only secrets, give development machines staging-store tokens, and keep
-deployment approvals in place.
+The wrapper constrains only its own commands. A raw Theme Access token can
+still change the live theme through another Shopify CLI, a direct API call, or
+any HTTP client. Where you can, keep production tokens in CI-only secrets, give
+development machines staging-store tokens, and keep deployment approvals in
+place.
 
 Nothing in the package stops an agent from running another Shopify CLI. Add
 your own agent command guards.
@@ -82,19 +85,7 @@ To host the proxy and issue sealed tokens, see
 
 ## Development
 
-```sh
-npm ci --ignore-scripts
-npm test
-
-cd worker
-npm ci --ignore-scripts
-npm test
-```
-
-Root tests cover rejected commands, environment and config isolation, temporary
-themes, and the installed binary layout. None of them contact Shopify. Worker
-tests cover sealing, the GraphQL allowlist, previews, and requests to a fake
-upstream.
+Run `npm test` in the root and in `worker/`. Neither suite contacts Shopify.
 
 Shopify docs: [theme dev](https://shopify.dev/docs/api/shopify-cli/theme/theme-dev),
 [theme pull](https://shopify.dev/docs/api/shopify-cli/theme/theme-pull), and
@@ -102,4 +93,4 @@ Shopify docs: [theme dev](https://shopify.dev/docs/api/shopify-cli/theme/theme-d
 
 ---
 
-Made with 💙 by [NoTambourine](https://notambourine.com).
+[NoTambourine](https://notambourine.com) · a boutique AI-native engineering agency

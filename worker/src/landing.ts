@@ -1,46 +1,42 @@
-import { brandFavicon, brandLockup, brandMark, brandStyles, ogImage } from './brand.generated.ts';
+import { brandFavicon, brandLockup, brandStyles, ogImage } from './brand.generated.ts';
+
+const title = 'shopify-cli-condom proxy: sealed tokens for Shopify theme development';
+const description = 'Run theme dev against real store data. The proxy refuses every write to your live theme.';
 
 const render = (host: string) => `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Live reload against real store data, with your live theme protected.">
-  <title>shopify-cli-condom proxy · sealed Shopify theme tokens</title>
+  <meta name="description" content="${description}">
+  <title>${title}</title>
   <link rel="icon" type="image/svg+xml" href="${brandFavicon}">
   <link rel="canonical" href="https://${host}/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="NoTambourine">
   <meta property="og:url" content="https://${host}/">
-  <meta property="og:title" content="shopify-cli-condom proxy · sealed Shopify theme tokens">
-  <meta property="og:description" content="Live reload against real store data, with your live theme protected.">
+  <meta property="og:title" content="${title}">
+  <meta property="og:description" content="${description}">
   <meta property="og:image" content="https://${host}/og.png">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Practice safe theme development. Live reload against real store data, with your live theme protected.">
+  <meta property="og:image:alt" content="Practice safe theme development. ${description}">
   <meta name="twitter:card" content="summary_large_image">
   <style>
     ${brandStyles}
-    :root { color-scheme: dark; }
     * { box-sizing: border-box; }
     body { margin: 0; }
-    main { width: min(100%, 1100px); margin-inline: auto; }
-    main > .nt-section:first-child { border-top: 0; }
-    .home { display: inline-flex; align-items: center; gap: var(--sp-3); color: var(--fg1); border: 0; font-family: var(--font-accent); font-size: var(--fs-label); font-weight: var(--fw-bold); }
-    .home svg { width: 32px; height: 32px; fill: var(--accent); }
     .nt-measure { margin-inline: 0; }
-    .nt-card p, .nt-card li { color: var(--fg2); font-size: var(--fs-small); }
     .nt-card ul { margin: 0; padding-left: var(--sp-5); display: grid; gap: var(--sp-2); }
-    pre { overflow-x: auto; margin: 0; padding: var(--sp-5); background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--r-md); color: var(--fg2); line-height: 1.6; }
-    pre code { padding: 0; background: none; color: inherit; }
-    .nt-footer p { font-size: inherit; color: inherit; }
+    pre { overflow-x: auto; margin: 0; padding: var(--sp-5); background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--r-md); color: var(--fg1); }
   </style>
 </head>
 <body>
   <a class="nt-skip" href="#main">Skip to content</a>
   <header class="nt-header">
-    <a class="home" href="/">${brandMark}<span>shopify-cli-condom</span></a>
+    <a href="https://notambourine.com" class="nt-brand" aria-label="NoTambourine home"><img src="${brandLockup}" alt=""></a>
+    <span class="nt-nav-note">shopify-cli-condom</span>
     <nav class="nt-header__links" aria-label="Primary">
       <a href="#setup">Setup</a>
       <a href="#limits">Limits</a>
@@ -49,12 +45,12 @@ const render = (host: string) => `<!doctype html>
     <a class="nt-header__cta nt-btn nt-btn--secondary nt-btn--sm" href="https://notambourine.com/tom">Start a conversation</a>
   </header>
   <main id="main">
-    <section class="nt-section nt-stack" style="--gap: var(--sp-8)">
+    <section class="nt-section nt-stack" style="--gap: var(--sp-8); border-top: 0">
       <div class="nt-stack" style="--gap: var(--sp-5)">
         <p class="eyebrow">Shopify theme proxy</p>
         <h1 class="display">Practice <em>safe</em> theme development.</h1>
       </div>
-      <p class="lede nt-measure">Live reload against real store data, with your live theme protected. The proxy holds your Theme Access token, and developers and AI agents get a sealed copy that expires.</p>
+      <p class="lede nt-measure">Run <code>theme dev</code> against real store data without handing out a token that can publish. The proxy keeps your Theme Access token. Developers and AI agents get a sealed copy that expires and cannot write to your live theme.</p>
       <div class="nt-cluster" style="--gap: var(--sp-4)">
         <a class="nt-btn nt-btn--primary nt-btn--lg" href="#setup">Connect a project</a>
         <a class="nt-btn nt-btn--ghost nt-btn--lg" href="#limits">Read the limits</a>
@@ -63,9 +59,9 @@ const render = (host: string) => `<!doctype html>
 
     <section class="nt-section nt-stack" style="--gap: var(--sp-8)" aria-labelledby="problem">
       <div class="nt-stack nt-measure" style="--gap: var(--sp-5)">
-        <p class="eyebrow">Why it exists</p>
-        <h2 id="problem">Shopify has no <em>development-only</em> token.</h2>
-        <p>A token that can run <code>theme dev</code> can also overwrite or publish your live theme. The proxy keeps that token and checks every request made with the sealed copy.</p>
+        <p class="eyebrow">The problem</p>
+        <h2 id="problem">The token that previews a theme can also <em>publish</em> one.</h2>
+        <p>A Theme Access token has no development-only scope. Anyone who can run <code>theme dev</code> with it can also overwrite or publish your live theme. The proxy holds that token and checks every request made with a sealed copy.</p>
       </div>
       <div class="nt-grid" style="--gap: var(--sp-5)">
         <div class="nt-card nt-card--support nt-stack" style="--gap: var(--sp-4); align-items: start">
@@ -81,7 +77,7 @@ const render = (host: string) => `<!doctype html>
           <ul>
             <li>Every write to the live theme</li>
             <li>Publishing a theme</li>
-            <li>Any operation <code>theme dev</code> and <code>theme pull</code> do not need</li>
+            <li>Any request <code>theme dev</code> and <code>theme pull</code> do not make</li>
           </ul>
         </div>
       </div>
@@ -93,17 +89,17 @@ const render = (host: string) => `<!doctype html>
         <h2 id="works">The Theme Access token stays on the <em>proxy</em>.</h2>
       </div>
       <div class="nt-grid">
-        <article class="nt-card nt-stack" style="--gap: var(--sp-3)">
-          <h3>Sealed</h3>
-          <p>Each sealed token is bound to one store. Developers never see the Theme Access token behind it.</p>
+        <article class="nt-card nt-stack" style="--gap: var(--sp-2)">
+          <h3 style="font-size: var(--fs-h4)">Sealed</h3>
+          <p>Each sealed token is encrypted to this proxy and bound to one store. Developers never see the Theme Access token inside it.</p>
         </article>
-        <article class="nt-card nt-stack" style="--gap: var(--sp-3)">
-          <h3>Checked</h3>
-          <p>Before forwarding a write or a preview, the proxy confirms the target is a development theme.</p>
+        <article class="nt-card nt-stack" style="--gap: var(--sp-2)">
+          <h3 style="font-size: var(--fs-h4)">Checked</h3>
+          <p>Before it forwards a write or a preview, the proxy confirms the target is a development theme.</p>
         </article>
-        <article class="nt-card nt-stack" style="--gap: var(--sp-3)">
-          <h3>Expiring</h3>
-          <p>Sealed tokens expire on their own.</p>
+        <article class="nt-card nt-stack" style="--gap: var(--sp-2)">
+          <h3 style="font-size: var(--fs-h4)">Expiring</h3>
+          <p>Every sealed token carries an expiry date. After it, the proxy refuses the token.</p>
         </article>
       </div>
     </section>
@@ -115,7 +111,7 @@ const render = (host: string) => `<!doctype html>
         <p>Load both values from a secret manager:</p>
 <pre><code>SHOPIFY_CLI_CONDOM_PROXY=${host}
 SHOPIFY_CLI_THEME_TOKEN=shptka_sealed_...</code></pre>
-        <p>The <a href="https://github.com/notambourine/shopify-cli-condom">README</a> covers installing the wrapper.</p>
+        <p>Install the wrapper from the <a href="https://github.com/notambourine/shopify-cli-condom">README</a>.</p>
       </div>
     </section>
 
@@ -138,7 +134,7 @@ SHOPIFY_CLI_THEME_TOKEN=shptka_sealed_...</code></pre>
         <p class="nt-footer__label">shopify-cli-condom</p>
         <ul>
           <li><a href="https://github.com/notambourine/shopify-cli-condom">Source</a></li>
-          <li><a href="https://github.com/notambourine/shopify-cli-condom/blob/main/worker/README.md">Proxy operations</a></li>
+          <li><a href="https://github.com/notambourine/shopify-cli-condom/blob/main/worker/README.md">Host your own proxy</a></li>
         </ul>
       </div>
       <div>
@@ -148,7 +144,7 @@ SHOPIFY_CLI_THEME_TOKEN=shptka_sealed_...</code></pre>
         </ul>
       </div>
     </nav>
-    <p class="nt-footer__legal">Made with 💙 by <a href="https://notambourine.com">NoTambourine</a>.</p>
+    <p class="nt-footer__legal">NoTambourine · a boutique AI-native engineering agency</p>
   </footer>
 </body>
 </html>`;

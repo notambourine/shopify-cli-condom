@@ -1,7 +1,7 @@
 {
   "name": "@notambourine/shopify-cli-condom",
   "version": "0.0.3",
-  "description": "Practice safe theme development. Live reload against real store data, with your live theme protected.",
+  "description": "Practice safe theme development. A Shopify CLI wrapper that runs theme dev and theme pull and never writes to your live theme.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/notambourine/shopify-cli-condom.git"
