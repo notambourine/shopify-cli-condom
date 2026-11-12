@@ -18,7 +18,7 @@
     "issue": "node bin/issue.ts"
   },
   "dependencies": {
-    "graphql": "17.0.2"
+    "graphql": "17.1.0"
   },
   "devDependencies": {
     "@notambourine/brand-kit": "4.0.0",
