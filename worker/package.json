@@ -21,7 +21,7 @@
     "graphql": "17.1.0"
   },
   "devDependencies": {
-    "@notambourine/brand-kit": "4.0.0",
+    "@notambourine/brand-kit": "4.1.0",
     "@types/node": "^26.6.6",
     "lockfile-lint": "^5.1.0",
     "typescript": "^7.0.2"
