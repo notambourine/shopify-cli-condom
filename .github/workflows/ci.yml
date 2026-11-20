@@ -12,7 +12,7 @@ jobs:
   fleet:
     permissions:
       contents: read
-    uses: notambourine/fleet-actions/.github/workflows/fleet-ci.yml@2e36fc9ff5fd42c3e87448f5de86e70569d0f3b5 # v1.12.5
+    uses: notambourine/fleet-actions/.github/workflows/fleet-ci.yml@ba0de050f761500bc0aa23acd0fd5a03211e2377 # v1.12.7
     with:
       vet: true # One manifest with one dependency; the scan costs seconds.
       runs-on: blacksmith-2vcpu-ubuntu-2404
@@ -41,7 +41,7 @@ jobs:
       # then emits as a hardlink entry that consumers cannot extract.
       - run: sfw npm ci --ignore-scripts
 
-      - uses: notambourine/fleet-actions/tools/wormhook@2e36fc9ff5fd42c3e87448f5de86e70569d0f3b5 # v1.12.5
+      - uses: notambourine/fleet-actions/tools/wormhook@ba0de050f761500bc0aa23acd0fd5a03211e2377 # v1.12.7
 
       # No guarddog: its heuristics fire on @shopify/cli's own minified bundle,
       # which this repo exists to vendor. Socket, vet, and wormhook cover the tree.
