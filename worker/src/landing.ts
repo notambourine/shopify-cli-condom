@@ -28,7 +28,30 @@ const render = (host: string) => `<!doctype html>
     * { box-sizing: border-box; }
     body { margin: 0; }
     .nt-measure { margin-inline: 0; }
-    .nt-card ul { margin: 0; padding-left: var(--sp-5); display: grid; gap: var(--sp-2); }
+    .flow { --gate: 184px; --lead: var(--sp-10); max-width: 880px; margin: 0; font-size: var(--fs-body); line-height: var(--lh-tight); color: var(--fg2); }
+    .flow ol { list-style: none; margin: 0; padding: 0; }
+    .flow__row { display: grid; grid-template-columns: minmax(0, 1fr) var(--gate) minmax(0, 1fr); }
+    .flow__row > * { display: flex; align-items: center; min-width: 0; padding-block: var(--sp-4); }
+    .flow__head > * { flex-direction: column; align-items: flex-start; gap: var(--sp-1); }
+    .flow__head > .flow__gate { align-items: center; text-align: center; padding-inline: var(--sp-2); border-top: 1px solid var(--line); border-radius: var(--r-md) var(--r-md) 0 0; }
+    .flow__head b { font-family: var(--font-accent); font-weight: var(--fw-semibold); color: var(--fg1); }
+    .flow__head small { font-size: var(--fs-caption); color: var(--fg3); }
+    .flow__gate { background: var(--bg-card); border-inline: 1px solid var(--line); }
+    .flow li:last-child > * { padding-bottom: var(--sp-6); }
+    .flow li:last-child .flow__gate { border-bottom: 1px solid var(--line); border-radius: 0 0 var(--r-md) var(--r-md); }
+    .flow__head > :last-child { padding-left: calc(var(--lead) + var(--sp-3)); }
+    .flow__req { gap: var(--sp-3); }
+    .flow__req::after, .flow li .flow__gate::before, .flow li .flow__gate::after, .flow__row--ok .flow__dest::before { content: ''; flex: 1 0 var(--sp-3); border-top: 2px solid var(--support); }
+    .flow__row--ok .flow__dest::before { flex: 0 0 var(--lead); }
+    .flow li.flow__row--no .flow__req::after, .flow li.flow__row--no .flow__gate::before { border-top: 2px dashed var(--line-control); }
+    .flow li.flow__row--no .flow__gate::after { border-color: transparent; }
+    .flow__mark { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--support); color: var(--support-fg); }
+    .flow__row--no .flow__mark { border-color: var(--line-control); color: var(--fg2); }
+    .flow__tip { flex: none; margin-left: -7px; color: var(--support); }
+    .flow__dest > span { margin-left: var(--sp-3); color: var(--fg1); }
+    .flow__row--no .flow__dest > span { margin-left: calc(var(--lead) + var(--sp-3)); color: var(--fg3); }
+    .flow__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    @media (max-width: 640px) { .flow { --gate: 76px; --lead: var(--sp-3); font-size: var(--fs-caption); } .flow__req { gap: var(--sp-2); } }
     pre { overflow-x: auto; margin: 0; padding: var(--sp-5); background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--r-md); color: var(--fg1); }
   </style>
 </head>
@@ -63,24 +86,40 @@ const render = (host: string) => `<!doctype html>
         <h2 id="problem">Agents build better themes on <em>real</em> store data.</h2>
         <p>An agent that previews against your real products, sections, and settings can check its own work before you review it. A Theme Access token has no development-only scope, though: anything that can run <code>theme dev</code> with it can also overwrite or publish your live theme. The proxy holds that token and checks every request made with a sealed copy, so you can hand the agent the store and review the result.</p>
       </div>
-      <div class="nt-grid" style="--gap: var(--sp-5)">
-        <div class="nt-card nt-card--support nt-stack" style="--gap: var(--sp-4); align-items: start">
-          <span class="nt-badge nt-badge--mint"><span class="nt-badge__dot"></span>Forwarded</span>
-          <ul>
-            <li><code>theme dev</code> and <code>theme pull</code></li>
-            <li>Reads of any theme, including the live one</li>
-            <li>Writes to development themes</li>
-          </ul>
+      <figure class="flow" aria-label="What the proxy does with each request an agent makes">
+        <div class="flow__row flow__head" aria-hidden="true">
+          <span><b>AI agent</b><small>holds a sealed token</small></span>
+          <span class="flow__gate"><b>Proxy</b><small>holds the Theme Access token</small></span>
+          <span><b>Your store</b><small>on Shopify</small></span>
         </div>
-        <div class="nt-card nt-stack" style="--gap: var(--sp-4); align-items: start">
-          <span class="nt-badge nt-badge--outline">Refused</span>
-          <ul>
-            <li>Every write to the live theme</li>
-            <li>Publishing a theme</li>
-            <li>Any request <code>theme dev</code> and <code>theme pull</code> do not make</li>
-          </ul>
-        </div>
-      </div>
+        <ol>
+        <li class="flow__row flow__row--ok">
+          <span class="flow__req"><span>Read any theme, including the live one</span></span>
+          <span class="flow__gate"><span class="flow__mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span></span>
+          <span class="flow__dest"><svg class="flow__tip" width="8" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m1 1 5 5-5 5"/></svg><span><span class="flow__sr">forwarded to </span>Any theme</span></span>
+        </li>
+        <li class="flow__row flow__row--ok">
+          <span class="flow__req"><span>Write to a development theme</span></span>
+          <span class="flow__gate"><span class="flow__mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span></span>
+          <span class="flow__dest"><svg class="flow__tip" width="8" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m1 1 5 5-5 5"/></svg><span><span class="flow__sr">forwarded to </span>Development themes</span></span>
+        </li>
+        <li class="flow__row flow__row--no">
+          <span class="flow__req"><span>Write to the live theme</span></span>
+          <span class="flow__gate"><span class="flow__mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span></span>
+          <span class="flow__dest"><span>Refused</span></span>
+        </li>
+        <li class="flow__row flow__row--no">
+          <span class="flow__req"><span>Publish a theme</span></span>
+          <span class="flow__gate"><span class="flow__mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span></span>
+          <span class="flow__dest"><span>Refused</span></span>
+        </li>
+        <li class="flow__row flow__row--no">
+          <span class="flow__req"><span>Any request <code>theme dev</code> and <code>theme pull</code> do not make</span></span>
+          <span class="flow__gate"><span class="flow__mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span></span>
+          <span class="flow__dest"><span>Refused</span></span>
+        </li>
+        </ol>
+      </figure>
     </section>
 
     <section class="nt-section nt-stack" style="--gap: var(--sp-8)" aria-labelledby="works">
