@@ -138,6 +138,37 @@ test('proxies storefront rendering only for development preview themes', async (
   assert.equal(forwarded.headers['cf-connecting-ip'], undefined);
 });
 
+test('forwards only the body the policy inspected, never caller query parameters or content types', async () => {
+  const { seen, fetcher } = upstream(() => json({ data: {} }));
+  const read = { query: 'query { themes(first: 1) { nodes { id } } }' };
+  const headers = { 'content-type': 'text/plain', 'X-Shopify-Shop': store, 'X-Shopify-Access-Token': sealed };
+  const smuggled = await handle(new Request('https://proxy.example/cli/admin/api/2026-07/graphql.json?query=mutation%7BthemePublish(id%3A%22999%22)%7Bid%7D%7D', {
+    method: 'POST', headers, body: JSON.stringify(read),
+  }), env(), fetcher);
+  assert.equal(smuggled.status, 400);
+  assert.equal(seen.length, 0);
+  const body = `{"query":"mutation { themePublish(id: \\"999\\") { id } }","query":${JSON.stringify(read.query)},"extensions":{"x":1}}`;
+  const response = await handle(new Request('https://proxy.example/cli/admin/api/2026-07/graphql.json', { method: 'POST', headers, body }), env(), fetcher);
+  assert.equal(response.status, 200);
+  assert.equal(seen[0]!.body, JSON.stringify(read));
+  assert.equal(seen[0]!.headers['content-type'], 'application/json');
+});
+
+test('refuses storefront paths that could resolve to an API route', async () => {
+  const { seen, fetcher } = upstream(roleReply);
+  const headers = { 'content-type': 'application/x-www-form-urlencoded', 'X-Shopify-Shop': store, 'X-Shopify-Access-Token': sealed };
+  for (const path of [
+    '/cli/sfr/admin/api/unstable/graphql.json', '/cli/sfr/Admin', '/cli/sfr/cli/admin/api/unstable/graphql.json',
+    '/cli/sfr/..%2f..%2fcli/admin/api/unstable/graphql.json', '/cli/sfr/x%2Fadmin', '/cli/sfr/%252e%252e/admin',
+    '/cli/sfr//admin/api/unstable/graphql.json', '/cli/sfr/x/%5cadmin', '/cli/sfr/x%2e/admin',
+  ]) {
+    const response = await handle(new Request(`https://proxy.example${path}?preview_theme_id=111`, { method: 'POST', headers, body: 'query=x' }), env(), fetcher);
+    assert.equal(response.status, 403, path);
+    assert.match(await message(response), /Storefront path/);
+  }
+  assert.equal(seen.length, 0);
+});
+
 test('answers 404 and 405 without unsealing anything', async () => {
   const { seen, fetcher } = upstream(() => json({}));
   assert.equal((await handle(new Request('https://proxy.example/admin/api/2026-07/graphql.json', { method: 'POST' }), env(), fetcher)).status, 404);
