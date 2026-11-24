@@ -1,7 +1,7 @@
 import { brandFavicon, brandLockup, brandStyles, ogImage } from './brand.generated.ts';
 
-const title = 'shopify-cli-condom proxy: sealed tokens for Shopify theme development';
-const description = 'Run theme dev against real store data. The proxy refuses every write to your live theme.';
+const title = 'shopify-cli-condom proxy: let AI agents run theme dev on your real store';
+const description = 'Give an agent a sealed token that reads any theme and writes only to development themes. The proxy refuses every write to your live theme.';
 
 const render = (host: string) => `<!doctype html>
 <html lang="en">
@@ -47,21 +47,21 @@ const render = (host: string) => `<!doctype html>
   <main id="main">
     <section class="nt-section nt-stack" style="--gap: var(--sp-8); border-top: 0">
       <div class="nt-stack" style="--gap: var(--sp-5)">
-        <p class="eyebrow">Shopify theme proxy</p>
+        <p class="eyebrow">Theme development for AI agents</p>
         <h1 class="display">Practice <em>safe</em> theme development.</h1>
       </div>
-      <p class="lede nt-measure">Run <code>theme dev</code> against real store data without handing out a token that can publish. The proxy keeps your Theme Access token. Developers and AI agents get a sealed copy that expires and cannot write to your live theme.</p>
+      <p class="lede nt-measure">Let an AI agent run <code>theme dev</code> against your real store data, unattended. It works with a sealed token that expires, reads any theme, and writes only to development themes. Your Theme Access token stays on the proxy.</p>
       <div class="nt-cluster" style="--gap: var(--sp-4)">
-        <a class="nt-btn nt-btn--primary nt-btn--lg" href="#setup">Connect a project</a>
+        <a class="nt-btn nt-btn--primary nt-btn--lg" href="#setup">Connect an agent</a>
         <a class="nt-btn nt-btn--ghost nt-btn--lg" href="#limits">Read the limits</a>
       </div>
     </section>
 
     <section class="nt-section nt-stack" style="--gap: var(--sp-8)" aria-labelledby="problem">
       <div class="nt-stack nt-measure" style="--gap: var(--sp-5)">
-        <p class="eyebrow">The problem</p>
-        <h2 id="problem">The token that previews a theme can also <em>publish</em> one.</h2>
-        <p>A Theme Access token has no development-only scope. Anyone who can run <code>theme dev</code> with it can also overwrite or publish your live theme. The proxy holds that token and checks every request made with a sealed copy.</p>
+        <p class="eyebrow">Why it exists</p>
+        <h2 id="problem">Agents build better themes on <em>real</em> store data.</h2>
+        <p>An agent that previews against your real products, sections, and settings can check its own work before you review it. A Theme Access token has no development-only scope, though: anything that can run <code>theme dev</code> with it can also overwrite or publish your live theme. The proxy holds that token and checks every request made with a sealed copy, so you can hand the agent the store and review the result.</p>
       </div>
       <div class="nt-grid" style="--gap: var(--sp-5)">
         <div class="nt-card nt-card--support nt-stack" style="--gap: var(--sp-4); align-items: start">
@@ -86,12 +86,12 @@ const render = (host: string) => `<!doctype html>
     <section class="nt-section nt-stack" style="--gap: var(--sp-8)" aria-labelledby="works">
       <div class="nt-stack nt-measure" style="--gap: var(--sp-5)">
         <p class="eyebrow">How it works</p>
-        <h2 id="works">The Theme Access token stays on the <em>proxy</em>.</h2>
+        <h2 id="works">The agent holds a token that cannot <em>publish</em>.</h2>
       </div>
       <div class="nt-grid">
         <article class="nt-card nt-stack" style="--gap: var(--sp-2)">
           <h3 style="font-size: var(--fs-h4)">Sealed</h3>
-          <p>Each sealed token is encrypted to this proxy and bound to one store. Developers never see the Theme Access token inside it.</p>
+          <p>Each sealed token is encrypted to this proxy and bound to one store. Agents and developers never see the Theme Access token inside it.</p>
         </article>
         <article class="nt-card nt-stack" style="--gap: var(--sp-2)">
           <h3 style="font-size: var(--fs-h4)">Checked</h3>
@@ -107,8 +107,8 @@ const render = (host: string) => `<!doctype html>
     <section class="nt-section" id="setup" aria-labelledby="setup-heading">
       <div class="nt-stack nt-measure" style="--gap: var(--sp-5)">
         <p class="eyebrow">Setup</p>
-        <h2 id="setup-heading">Point the wrapper at this <em>proxy</em>.</h2>
-        <p>Load both values from a secret manager:</p>
+        <h2 id="setup-heading">Point the agent's wrapper at this <em>proxy</em>.</h2>
+        <p>Load both values into the agent's environment from a secret manager:</p>
 <pre><code>SHOPIFY_CLI_CONDOM_PROXY=${host}
 SHOPIFY_CLI_THEME_TOKEN=shptka_sealed_...</code></pre>
         <p>Install the wrapper from the <a href="https://github.com/notambourine/shopify-cli-condom">README</a>.</p>
@@ -118,9 +118,10 @@ SHOPIFY_CLI_THEME_TOKEN=shptka_sealed_...</code></pre>
     <section class="nt-section" id="limits" aria-labelledby="limits-heading">
       <div class="nt-stack nt-measure" style="--gap: var(--sp-5)">
         <p class="eyebrow">Limits</p>
-        <h2 id="limits-heading">What a stolen token can <em>still</em> do.</h2>
+        <h2 id="limits-heading">What a sealed token can <em>still</em> do.</h2>
         <div class="nt-card nt-card--accent nt-stack" style="--gap: var(--sp-3)">
-          <p>A stolen sealed token can still read every theme and create, edit, or delete development themes on its store until it expires. It cannot write to the live theme.</p>
+          <p>A sealed token, held by your agent or stolen from it, can still read every theme and create, edit, or delete development themes on its store until it expires. It cannot write to the live theme.</p>
+          <p>The proxy limits the sealed token only. An agent that also holds the raw Theme Access token can skip the proxy, so keep that token out of its environment.</p>
           <p>You cannot revoke a single token. Rotate the Theme Access token to invalidate every sealed copy.</p>
           <p>Whoever runs this proxy can decrypt every token sent to it. If you cannot extend that trust, <a href="https://github.com/notambourine/shopify-cli-condom/blob/main/worker/README.md">host your own</a>.</p>
         </div>
