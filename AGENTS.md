@@ -37,6 +37,11 @@ Tests                     beside each package
 - Verify install instructions against the published npm version.
 - Write in the voice and tokens of the pinned `@notambourine/brand-kit`.
 
+## Deploy
+
+- Expect Cloudflare Workers Builds to deploy the Worker on every push to `main`; no GitHub workflow does it. Never ask for a manual `wrangler deploy` after a merge.
+- Confirm a deploy by the `Workers Builds: shopify-cli-condom` check on the `main` commit, then spot-check the live host.
+
 ## Checks
 
 Run `npm test` in the root and in `worker/` before pushing. CI repeats both with supply-chain scans.
