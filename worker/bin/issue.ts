@@ -2,13 +2,13 @@
 import { parseArgs } from 'node:util';
 import { issueCredential } from './issue-command.ts';
 
-const usage = 'Usage: issue --secret op://VAULT/ITEM/FIELD --key SSH_KEY --store STORE --label RECIPIENT [--proxy condom.notambourine.com] [--days 30]';
+const usage = 'Usage: issue --secret op://VAULT/ITEM/FIELD --key SSH_KEY --store STORE --label RECIPIENT [--proxy shopify-cli-condom.notambourine.com] [--days 30]';
 
 try {
   const { values } = parseArgs({
     options: {
       secret: { type: 'string' }, key: { type: 'string' }, store: { type: 'string' }, label: { type: 'string' },
-      proxy: { type: 'string', default: 'condom.notambourine.com' }, days: { type: 'string', default: '30' }, help: { type: 'boolean' },
+      proxy: { type: 'string', default: 'shopify-cli-condom.notambourine.com' }, days: { type: 'string', default: '30' }, help: { type: 'boolean' },
     }, strict: true,
   });
   if (values.help) {

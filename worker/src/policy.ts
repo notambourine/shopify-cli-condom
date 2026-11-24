@@ -15,6 +15,9 @@ const themeScopedMutations: Record<string, string> = {
 const deny = (reason: string): Decision => ({ allow: false, reason });
 const allow = (field: string, themeIds: string[] = []): Decision => ({ allow: true, field, themeIds });
 
+const repeats = (nodes: readonly { name: { value: string } }[] = []): boolean =>
+  new Set(nodes.map((node) => node.name.value)).size !== nodes.length;
+
 export function themeId(value: unknown): string | null {
   if (typeof value !== 'string') return null;
   const match = /^(?:gid:\/\/shopify\/OnlineStoreTheme\/)?(\d{1,20})$/.exec(value);
@@ -62,6 +65,10 @@ export function evaluate(request: GraphqlRequest): Decision {
   if (selections.length !== 1 || root?.kind !== Kind.FIELD) return deny('Exactly one root field is allowed.');
 
   const name = root.name.value;
+  // Shopify and this proxy could pick different duplicates, so the role check might cover the wrong theme.
+  if (repeats(root.arguments) || repeats(operation.variableDefinitions?.map((definition) => definition.variable))) {
+    return deny('Duplicate arguments and variables are not allowed.');
+  }
   const provided = request.variables ?? {};
   if (typeof provided !== 'object' || Array.isArray(provided)) return deny('Variables must be an object.');
   const args = argumentValues(root, variableValues(operation, provided));
