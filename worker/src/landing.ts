@@ -37,7 +37,7 @@ const render = (host: string) => `<!doctype html>
     .flow__head b { font-family: var(--font-accent); font-weight: var(--fw-semibold); color: var(--fg1); }
     .flow__head small { font-size: var(--fs-caption); color: var(--fg3); }
     .flow__gate { background: var(--bg-card); border-inline: 1px solid var(--line); }
-    .flow li:last-child > * { padding-bottom: var(--sp-6); }
+    .flow li:last-child > * { padding-bottom: var(--sp-6); border-bottom: 1px solid transparent; }
     .flow li:last-child .flow__gate { border-bottom: 1px solid var(--line); border-radius: 0 0 var(--r-md) var(--r-md); }
     .flow__head > :last-child { padding-left: calc(var(--lead) + var(--sp-3)); }
     .flow__req { gap: var(--sp-3); }
