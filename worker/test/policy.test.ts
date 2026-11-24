@@ -88,6 +88,12 @@ test('denies batching, aliases around the allowlist, fragments, and garbage', ()
   denied(evaluate({ query: 'query { theme(id: "1") { id } }', variables: [] as unknown as Record<string, unknown> }), /Variables/);
 });
 
+test('denies duplicate arguments and variable definitions', () => {
+  denied(evaluate({ query: 'mutation { themeFilesDelete(themeId: "1", themeId: "2", files: []) { deletedThemeFiles { filename } } }' }), /Duplicate/);
+  denied(evaluate({ query: 'mutation($id: ID! = "1", $id: ID! = "2") { themeDelete(id: $id) { deletedThemeId } }' }), /Duplicate/);
+  denied(evaluate({ query: 'mutation { themeCreate(role: DEVELOPMENT, role: MAIN) { theme { id } } }' }), /Duplicate/);
+});
+
 test('extracts numeric ids from GIDs and rejects anything else', () => {
   assert.equal(themeId(gid), '123');
   assert.equal(themeId('123'), '123');

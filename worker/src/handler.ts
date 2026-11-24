@@ -12,6 +12,8 @@ export type Upstream = (request: Request) => Promise<Response>;
 
 const defaultUpstream = 'theme-kit-access.shopifyapps.com';
 const adminPath = /^\/cli\/admin\/api\/[^/]+\/graphql\.json$/;
+// Upstream may decode or collapse a path, so anything that could resolve to an API route stays out.
+const storefrontPath = /^\/cli\/sfr(?!\/(?:admin|cli)(?:\/|$))(?!.*(?:\/\/|\\|%2f|%5c|%2e|%25))/i;
 
 let cachedKey: { jwk: string; key: Promise<CryptoKey> } | undefined;
 async function privateKey(env: Env): Promise<CryptoKey> {
@@ -46,7 +48,8 @@ async function admin(request: Request, target: URL, credential: Credential, upst
   if (typeof graphql !== 'object' || graphql === null || typeof (graphql as { query?: unknown }).query !== 'string') {
     return reject(400, 'Body must include a GraphQL query.');
   }
-  const decision = evaluate(graphql as { query: string; variables?: Record<string, unknown> | null });
+  const { query, variables } = graphql as { query: string; variables?: Record<string, unknown> | null };
+  const decision = evaluate({ query, variables });
   if (!decision.allow) return reject(403, decision.reason);
   for (const id of decision.themeIds) {
     if (await lookupRole(upstream, target, credential, id) !== 'DEVELOPMENT') {
@@ -54,11 +57,13 @@ async function admin(request: Request, target: URL, credential: Credential, upst
     }
   }
   const headers = new Headers({ 'X-Shopify-Shop': credential.store, 'X-Shopify-Access-Token': credential.token });
-  for (const name of ['accept', 'content-type', 'user-agent']) {
+  for (const name of ['accept', 'user-agent']) {
     const value = request.headers.get(name);
     if (value !== null) headers.set(name, value);
   }
-  return upstream(new Request(target, { method: 'POST', headers, body, redirect: 'manual' }));
+  // Shopify must parse exactly what the policy inspected, so the caller's bytes and content type never reach it.
+  headers.set('content-type', 'application/json');
+  return upstream(new Request(target, { method: 'POST', headers, body: JSON.stringify({ query, variables }), redirect: 'manual' }));
 }
 
 async function storefront(request: Request, target: URL, credential: Credential, upstream: Upstream): Promise<Response> {
@@ -148,8 +153,11 @@ export async function handle(request: Request, env: Env, upstream: Upstream = fe
   const target = new URL(url.pathname + url.search, `https://${env.UPSTREAM_DOMAIN ?? defaultUpstream}`);
   if (adminPath.test(url.pathname)) {
     if (request.method !== 'POST') return reject(405, 'Admin API requests must be POST.');
+    if (url.search) return reject(400, 'Admin API requests cannot include query parameters.');
   } else if (url.pathname !== '/cli/sfr' && !url.pathname.startsWith('/cli/sfr/')) {
     return reject(404, 'Not proxied.');
+  } else if (!storefrontPath.test(url.pathname)) {
+    return reject(403, 'Storefront path is not allowed.');
   }
   const auth = await authenticate(env, request.headers);
   if ('response' in auth) return auth.response;
